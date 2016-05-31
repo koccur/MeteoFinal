@@ -1,0 +1,1 @@
+BRAK STRONY!!!!1111oneoneoneelven

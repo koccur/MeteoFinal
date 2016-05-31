@@ -1,0 +1,145 @@
+.logo-wrapper{
+	margin: 15px 0 25px;;
+	@media #{$medium} {
+				display: none;
+			}	
+}
+
+.header-content {
+	a {
+		color: $bright-text-color;
+		font-weight: $font-normal;
+		text-decoration: none;
+	}
+}
+
+#row-sign{
+	color: $bright-text-color;
+	position: relative;
+	float: right;
+	ul{
+		background-color: $bright-green;
+		li{
+			@include list_style_none;
+			@include upper;
+			padding: 10px;
+			background-color: $dark-green;
+			float: left;
+			&:first-of-type{
+			margin-left: 10px;
+		}
+		}
+	}
+	@media #{$medium} {
+		display: none;
+	}
+}
+
+.main{
+	background-color: $bright-green;
+	.main-list{
+		margin: 0;
+		@include list_style_none;
+		@include upper;
+		font-size: $font-size-menu;
+		height: $menu-height;
+		line-height: $menu-height;
+
+		#menu-mobile{
+			float: right;
+			width: 100%;
+			#logo-menu{
+				img {
+					position: relative;
+					float: left !important;
+					margin: 5px 0 0 10px;
+					height: 40px;
+					width: auto;
+				}
+			}
+			display: none;
+			@media #{$medium} {
+				display: inline-block;
+				li {
+					background-color: $bright-green;
+					height: 50px;
+					float: right;
+					padding: 0;
+				}
+			}
+		}
+		#menu{
+			@media #{$medium} {
+				display: none;
+			}
+		}
+  		li{
+  			float: left;
+  			background-color: $dark-green;
+  			font-weight: $font-bold;
+  			width: auto;
+  			padding: 0 10px;
+  			margin-left: 10px;
+  			&:first-child {
+  				margin-left: 0;
+  			}
+  			&:hover{
+  				@include basic_transition;
+  				background-color: $bright-green;
+  			}
+  			a{
+  				font-weight: $font-bold;
+  				display: block;
+  			}
+  		}
+	}
+}
+
+.menu-mobile-list{
+	font-size: $font-size-menu-mobile;
+	background-color: $dark-green;
+	height: auto;
+	ul{
+		@include upper;
+		@include list_style_none;
+		li {
+		font-weight: $font-bold;;
+		width: auto;
+			a {
+				text-align:center;
+				display: block;
+				&:hover{
+	  				@include basic_transition;
+	  				background-color: $bright-green;
+	  			}
+			}
+		}
+	}
+	#logout{
+		a{
+			float: right;
+		}
+	}
+}
+
+// .input-group{
+// 	width: 250px;
+// 	margin: 14px 14px 0 0;
+// }
+// .stylish-input-group, .input-group-addon{
+//     background: $dark-green !important; 
+//     border: 0;
+// 	&:hover{
+// 		background: $bright-green;
+// 	}
+// }
+// .stylish-input-group .form-control{
+// 	border-right: 0; 
+// 	box-shadow:0 0 0; 
+// }
+// .stylish-input-group button{
+// 	color: $bright-text-color;
+//     border: 0;
+//     background:transparent;
+// }
+

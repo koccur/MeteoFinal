@@ -1,0 +1,34 @@
+// Dokonczyc meny responsywne
+// Następnie zajac sie szczegółami
+
+body {
+	font-family: $font-family;
+	font-weight: $font-normal;	
+	color: $bright-text-color !important;
+}
+
+a {
+	color: $bright-text-color;
+	font-weight: $font-normal;
+	
+	&:hover, &:active, &:visited{
+		color: white;
+	}
+}
+
+h1 {
+	font-weight: $font-bold;
+}
+
+
+#main-container {
+	max-width: 1200px;
+	margin: 0 auto;
+
+}
+
+
+.no-padding {
+	@include no_padding;
+}
+

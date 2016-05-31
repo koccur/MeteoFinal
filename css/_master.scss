@@ -1,0 +1,120 @@
+.weather-info{
+	margin: 5px 0;
+	color: $bright-text-color !important;
+	font-weight: $font-bold;
+	@include upper;
+	min-height: 270px;
+	background-color: $bright-green;
+	.actual-weather-bar{
+		h3{
+			margin-top: 10px;
+			font-weight: 900;
+		}
+		.actual-weather{
+			margin-top: 5px;
+			text-transform: none;
+		}
+		#custom-search-input{
+		padding: 3px;
+    	//border: solid 1px #E4E4E4;
+    	border-radius: 20px;
+    	background-color: #fff;
+    	.input-group{
+    		border-radius: 20px;
+    		margin-left: 5px;
+    		input{
+    			border: 0;
+    			box-shadow: none;
+    		}
+		    button{
+		    	margin: 2px 0 0 0;
+			    background: none;
+			    box-shadow: none;
+			    border: 0;
+			    color: #666666;
+			    padding: 0 8px 0 10px;
+			    border-left: solid 1px #ccc;
+			    &:hover{
+			    box-shadow: none;
+			    color: black;
+			    }
+		    }
+    	}
+    
+	}
+
+	}
+
+	
+}
+
+.master-container {
+	margin-bottom: 5px;
+	color: $bright-text-color !important;
+	background-color: $bright-green;
+	.map{
+		height: 744px;
+		border-right: 5px solid white;
+		@media #{$medium} {
+				border: none;
+			}
+	}
+	.recent-articles{
+		@media #{$medium} {
+				border-top: 5px solid white;
+			}
+		height: 744px;
+		background-color: $dark-green;
+		.recent-articles-header{
+			text-align:center;
+			padding: 5px 0;
+			width: 100%;
+			background-color: $bright-green;
+		}
+		.articles{
+			padding: 20px 10px;
+			border-bottom: 1px dotted white;
+			.media{
+				p {
+					width: 100%;
+					height: $font-size-base*$line-height-base*$number-of-lines;
+					margin-bottom: 0;
+					display: block; 
+					display: -webkit-box;
+					line-height: 1.4;
+					-webkit-line-clamp: $number-of-lines;
+		  			-webkit-box-orient: vertical;
+					overflow: hidden;
+					@include ellipsis;
+				}
+				.read-more-recent-articles{
+					margin-top: 15px;
+				}
+			}
+		}
+	}
+	//form login, register
+	.sign-panel{
+		a{
+			color: black;
+			text-decoration: none;
+		}
+		color: black;
+		margin-top: 10px;
+		margin-bottom: 10px;		
+		background-color: #eaecf2;
+		-webkit-box-shadow: 5px 5px 29px -1px rgba(0,0,0,0.51);
+		-moz-box-shadow: 5px 5px 29px -1px rgba(0,0,0,0.51);
+		box-shadow: 5px 5px 29px -1px rgba(0,0,0,0.51);
+		#sign-heading{
+			font-size: 35px;
+		}
+		button{
+			margin-bottom: 15px;
+		}
+		#password-reset{
+			text-decoration: underline;
+		}
+	}
+
+}

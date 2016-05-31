@@ -1,0 +1,21 @@
+footer {
+	height: 35px;
+	margin-bottom: 10px;
+	color: $bright-text-color !important;
+	background-color: $bright-green;
+	#copy{
+		position: relative;
+		top: 5px;
+		font-size: 18px;
+		margin: 10px;
+	}
+	#socialicons{
+		margin-right: 5px;
+		float: right;
+		i{
+			padding: 5px;
+			font-size: 28px;
+			
+		}
+	}
+}
