@@ -1,6 +1,7 @@
 @extends('layouts.master')
 @section('content')
-    <h1>Edit: {!! $article->title !!}</h1>
+<div class="col-xs-12">
+    <h1>Edycja artykułu: {!! $article->title !!}</h1>
 
     {!! Form::model($article,['method' => 'PATCH', 'action' => ['ArticlesController@update',$article->id]]) !!}
     @include('articles._form',['submitButtonText' => 'Zaktualizuj'])
@@ -8,4 +9,5 @@
     {!! Form::close() !!}
 
     @include('errors.list')
-    @stop
+</div>
+@stop

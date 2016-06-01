@@ -43,10 +43,10 @@
     echo $obj->longitude." ";
     date_default_timezone_set($obj->timezone);
 
-    echo "Pogoda na najbliższe 48 godzin <br>";
+    echo "<p id='godzinowa'>Pogoda na najbliższe 48 godzin </p>";
 
     echo "<table class='table table-weather'><thead><tr>";
-    echo "<th>Data i godzina</th><th>Temperatura/Odczuwalna</th><th>Wilgotność/Zachmurzenie</th><th>Wiatr/Ciśnienie</th></tr></thead><tbody>";
+    echo "<th>Data i godzina</th><th>Temperatura / Odczuwalna</th><th>Wilgotność / Zachmurzenie</th><th>Wiatr / Ciśnienie</th></tr></thead><tbody>";
     for ($i = 1; $i <= 48; $i++) {
         echo "<tr><th scope='row'>";
         echo date('H:i d-m', $obj->hourly->data[$i]->time)."</th><td>";
@@ -61,9 +61,9 @@
     }
     echo "</tbody></table> <br>";
 
-    echo "Pogoda na najbliższe 7 dni <br>";
+    echo "<p id='tygodniowa'>Pogoda na najbliższe 7 dni </p>";
     echo "<table class='table table-weather'> <thead><tr>";
-    echo "<th>Data i godzina</th><th>Temperatura/Odczuwalna</th><th>Wilgotność/Zachmurzenie</th><th>Wiatr/Ciśnienie</th></tr></thead><tbody>";
+    echo "<th>Data i godzina</th><th>Temperatura / Odczuwalna</th><th>Wilgotność / Zachmurzenie</th><th>Wiatr / Ciśnienie</th></tr></thead><tbody>";
     for ($i = 1; $i <= 7; $i++) {
         echo "<tr><th scope='row'>";
         echo "Wschod ".date('H:i:s',$obj->daily->data[$i]->sunriseTime)."<br>";

@@ -5,6 +5,14 @@ body {
 	font-family: $font-family;
 	font-weight: $font-normal;	
 	color: $bright-text-color !important;
+background: rgba(156,230,252,1);
+background: -moz-radial-gradient(center, ellipse cover, rgba(156,230,252,1) 0%, rgba(156,230,252,0.73) 50%, rgba(180,236,253,0.66) 62%, rgba(255,255,255,0.66) 100%);
+background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%, rgba(156,230,252,1)), color-stop(50%, rgba(156,230,252,0.73)), color-stop(62%, rgba(180,236,253,0.66)), color-stop(100%, rgba(255,255,255,0.66)));
+background: -webkit-radial-gradient(center, ellipse cover, rgba(156,230,252,1) 0%, rgba(156,230,252,0.73) 50%, rgba(180,236,253,0.66) 62%, rgba(255,255,255,0.66) 100%);
+background: -o-radial-gradient(center, ellipse cover, rgba(156,230,252,1) 0%, rgba(156,230,252,0.73) 50%, rgba(180,236,253,0.66) 62%, rgba(255,255,255,0.66) 100%);
+background: -ms-radial-gradient(center, ellipse cover, rgba(156,230,252,1) 0%, rgba(156,230,252,0.73) 50%, rgba(180,236,253,0.66) 62%, rgba(255,255,255,0.66) 100%);
+background: radial-gradient(ellipse at center, rgba(156,230,252,1) 0%, rgba(156,230,252,0.73) 50%, rgba(180,236,253,0.66) 62%, rgba(255,255,255,0.66) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#9ce6fc', endColorstr='#ffffff', GradientType=1 );
 }
 
 a {
