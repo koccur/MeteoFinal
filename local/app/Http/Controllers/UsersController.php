@@ -63,7 +63,7 @@ class UsersController extends Controller
         $zmm->save($destination_path.'thumbnails/'.$filename);
         $zm->image_url=$destination_path.'thumbnails/'.$filename;
         $zm->save();
-        Session::flash('flash_message','Skasowano u¿ytkownika');
+        Session::flash('flash_message','Skasowano u?ytkownika');
         return redirect('users');
     }
     public function user_articles($id){
