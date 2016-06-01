@@ -35,18 +35,7 @@
             		
 					<div class="contents">
 					@include('layouts.weather')
-					<!-- <div id="temp" class="cols col-xs-6 col-lg-2">
-            			Aktualna / Odczuwalna
-            		</div> -->
-            		<!-- <div id="wind" class="cols col-xs-6 col-lg-2">
-            			Wiatr
-            		</div> -->
-            		<!-- <div id="rain" class="cols col-xs-6 col-lg-2">
-            			Szansa na opady / Wilgotność
-            		</div> -->
-            		<!-- <div id="pressure" class="cols col-xs-6 col-lg-2">
-            			Ciśnienie / Zachmurzenie
-            		</div> -->
+					
 					<div id="weather-later" class=" col-md-12 col-lg-4">
             			<a href="{{URL::to('/forecast#godzinowa')}}"><button type="button" id="hourly" class="btn btn-success">Pogoda Godzinowa</button></a>
             			<a href="{{URL::to('/forecast#tygodniowa')}}"><button type="button" class="btn btn-success">Pogoda Tygodniowa</button></a>
@@ -64,40 +53,7 @@
 		<div class="container-fluid">
 			<div class="row">
 			@yield('content')
-			<!-- to trzeba wrzucić do oddzielnej podstrony strony głównej -->
-				<!-- <div class="col-sm-12 col-md-8 map">
-					<div id="map-poland">
-						 <ul class="poland">
-						  <li class="pl1"><a href="#dolnoslaskie">Dolnośląskie</a></li>
-						  <li class="pl2"><a href="#kujawsko-pomorskie">Kujawsko-pomorskie</a></li>
-						  <li class="pl3"><a href="#lubelskie">Lubelskie</a></li>
-						  <li class="pl4"><a href="#lubuskie">Lubuskie</a></li>
-						  <li class="pl5"><a href="#lodzkie">Łódzkie</a></li>
-						  <li class="pl6"><a href="#malopolskie">Małopolskie</a></li>
-						  <li class="pl7"><a href="#mazowieckie">Mazowieckie</a></li>
-						  <li class="pl8"><a href="#opolskie">Opolskie</a></li>
-						  <li class="pl9"><a href="#podkarpackie">Podkarpackie</a></li>
-						  <li class="pl10"><a href="#podlaskie">Podlaskie</a></li>
-						  <li class="pl11"><a href="#pomorskie">Pomorskie</a></li>
-						  <li class="pl12"><a href="#slaskie">Śląskie</a></li>
-						  <li class="pl13"><a href="#swietokrzyskie">Świętokrzyskie</a></li>
-						  <li class="pl14"><a href="#warminsko-mazurskie">Warmińsko-mazurskie</a></li>
-						  <li class="pl15"><a href="#wielkopolskie">Wielkopolskie</a></li>
-						  <li class="pl16"><a href="#zachodniopomorskie">Zachodniopomorskie</a></li>
-						 </ul>
-						</div>
-				</div> -->
-				<!-- <div class="col-sm-12 col-md-4 recent-articles no-padding">
-						<div class="recent-articles-header">
-							<h3> Najnowsze artykuły:</h3>
-						</div>
-					<div class="articles">
-						{{--Tutaj uporządkowanie tego jak to ma wygladac, np stala wysokosc diva--}}
-			-->
-			@include('articles.lista')
-
-					</div>
-				</div>
+				
 			</div>
 		</div>
 	</section>
