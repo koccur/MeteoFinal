@@ -73,11 +73,11 @@
 						</div>
 					<div class="articles">
 						{{--Tutaj uporządkowanie tego jak to ma wygladac, np stala wysokosc diva--}}
-						@include('articles.lista')
-						
+			-->
+			@include('articles.lista')
+
 					</div>
-					Ładne miejsce na reklame sie znalazło :D
-				</div> -->
+				</div>
 			</div>
 		</div>
 	</section>

@@ -150,7 +150,7 @@ return [
         Illuminate\View\ViewServiceProvider::class,
         Collective\Html\HtmlServiceProvider::class,
         Zizaco\Entrust\EntrustServiceProvider::class,
-//        Intervention\Image\ImageServiceProvider::class,
+        Intervention\Image\ImageServiceProvider::class,
         
 
         /*
@@ -212,7 +212,7 @@ return [
         'Html' => Collective\Html\HtmlFacade::class,
         'Entrust'=>Zizaco\Entrust\EntrustFacade::class,
 //        'Model' =>App\User::class,//nowe nie wiem czy dodac?
-//        'Image' =>Intervention\Image\Facades\Image::class
+        'Image' =>Intervention\Image\Facades\Image::class,
         'Forecast' =>Nwidart\LaravelForecast\ForecastFacade::class,
 
     ],

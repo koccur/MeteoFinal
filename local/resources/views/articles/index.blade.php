@@ -18,8 +18,8 @@
         <article>
             <a href="{{action('ArticlesController@show',$article->id)}}">
             <div id="image-article">
-            <!-- <img class="img-fluid" src="{{URL::asset($article->image_url_s)}}" alt="" /> -->
-            <img class="img-fluid" src="http://img.cda.pl/obr/oryginalne/850ca7d90566b9ed82c60d9d50771230.jpg" alt="" />
+            <img class="img-fluid" src="{{URL::asset($article->image_url_s)}}" alt="" />
+            {{--<img class="img-fluid" src="http://img.cda.pl/obr/oryginalne/850ca7d90566b9ed82c60d9d50771230.jpg" alt="" />--}}
             </div>
             <div id="content-article">
             <p class="body">

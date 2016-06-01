@@ -25,10 +25,14 @@ class ArticlesController extends Controller
 public function __construct(){
     $this->middleware('auth',['only' => 'create']);
 }
-    public function index(){
+    public function index()
+    {
+        $articles = Article::latest('published_at')->published()->paginate(5);
+        return view('articles.index', compact('articles'));
+    }
+    public function lista(){
         $articles= Article::latest('published_at')->published()->paginate(5);
-//        Forecast::get('37.8267','-122.423');
-        return view('articles.index',compact('articles'));
+        return view('articles.lista',compact('articles'));
     }
     public function show($id)
     {

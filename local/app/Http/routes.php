@@ -19,9 +19,12 @@ Route::get('/contact', function () {
 Route::get('/about', function () {
     return view('contact.about');
 });
+Route::get('articles/lista',function (){
+    return view('articles.lista');
+});
 Route::get('/images/gallery',function(){
     $images=Image::all();
-    return view('images.gallery',compact('images'));
+    return view('images.list',compact('images'));
 });
 //Route::get('/users.delete')
 Route::group(['middleware' => ['web']], function () {
