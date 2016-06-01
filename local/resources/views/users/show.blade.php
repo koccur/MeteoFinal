@@ -5,8 +5,8 @@
 <div class="user-profile">
     <div id="avatar" class="col-xs-4 col-xs-offset-4 col-md-3 col-md-offset-0">
         
-           <!-- <img class="img-fluid" src="{{URL::asset($user->image_url)}}" alt="" /> -->
-           <img class="img-fluid" src="../img/user.png" alt="" /> 
+           <img class="img-fluid" src="{{URL::asset($user->image_url)}}" alt="" />
+
     </div>
     <div class="col-xs-12 col-md-9"> 
         <div id="user-name">{{$user->username}} </div>
