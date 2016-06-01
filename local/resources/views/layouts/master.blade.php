@@ -16,24 +16,44 @@
 			<div class="row">
 				<div class="col-sm-12 actual-weather-bar">
 					<h3> 
-
+						Tu ma się wyświetlać miejscowość
 					</h3>
 					<div id="custom-search-input">
                 		<div class="input-group">
-                    		<input type="text" class="form-control" placeholder="Wybierz miejscowość" />
+                    		<input type="text" class="form-control form-control-costum" placeholder="Wybierz miejscowość" />
                     		<span class="input-group-btn">
                         		<button class="btn btn-info" type="button">
                             	<i class="fa fa-search" aria-hidden="true"></i>
                         		</button>
                         		
-                        		<button class="btn btn-info" type="button">
+                        		<button onclick="getLocation()" class="btn btn-info" type="button">
                             	<i class="fa fa-location-arrow" aria-hidden="true"></i>
                         		</button>
                     		</span>
                 		</div>
             		</div>
+            		
 					<div class="contents">
-						@include('layouts.weather')
+					@include('layouts.weather')
+					<!-- <div id="temp" class="cols col-xs-6 col-lg-2">
+            			Aktualna / Odczuwalna
+            		</div> -->
+            		<!-- <div id="wind" class="cols col-xs-6 col-lg-2">
+            			Wiatr
+            		</div> -->
+            		<!-- <div id="rain" class="cols col-xs-6 col-lg-2">
+            			Szansa na opady / Wilgotność
+            		</div> -->
+            		<!-- <div id="pressure" class="cols col-xs-6 col-lg-2">
+            			Ciśnienie / Zachmurzenie
+            		</div> -->
+					<div id="weather-later" class=" col-md-12 col-lg-4">
+            			<button type="button" id="hourly" class="btn btn-success">Pogoda Godzinowa</button>
+            			<button type="button" class="btn btn-success">Pogoda Tygodniowa</button>
+            			<div class="clearfix"></div>
+            		</div>
+            		<div class="clearfix"></div>
+						
 					</div>
 				</div>
 			</div>

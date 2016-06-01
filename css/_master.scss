@@ -6,14 +6,61 @@
 	min-height: 270px;
 	background-color: $bright-green;
 	.actual-weather-bar{
+		.contents{
+			@media screen and (max-width: 990px) {
+				#temp,#rain{
+					border-right: 10px solid $bright-green;
+				}
+				#temp,#wind,#pressure,#rain{
+					border-bottom: 10px solid $bright-green;
+				}
+			}
+
+			margin: 15px auto;
+			
+			.cols{
+				padding: 10px;
+				font-size: 13px;
+				@include upper;
+				background-color: $dark-green;
+				min-height: 100px;
+				border-right: 20px solid $bright-green;
+				@media screen and (max-width: 990px) {
+				border: none;
+			}
+				h5{
+					text-align:center;
+				}
+			}
+			#weather-later{
+				background-color: transparent;
+				padding: 0;
+				button{
+					font-size: 13px;
+					@include upper;
+					font-weight: bold;
+					width: 100%;
+					height: 45px;
+					border-radius: 0;
+					border: 0px;
+					background-color: $dark-green;
+					&:hover{
+						border: 1px solid $bright-green;
+					}
+					&:focus{
+    				outline: none;
+    			}
+				}
+				#hourly{
+					margin-bottom: 10px;
+				}
+			}
+		}
 		h3{
 			margin-top: 10px;
 			font-weight: 900;
 		}
-		.actual-weather{
-			margin-top: 5px;
-			text-transform: none;
-		}
+		
 		#custom-search-input{
 		padding: 3px;
     	//border: solid 1px #E4E4E4;
@@ -25,6 +72,7 @@
     		input{
     			border: 0;
     			box-shadow: none;
+    			
     		}
 		    button{
 		    	margin: 2px 0 0 0;
@@ -35,9 +83,14 @@
 			    padding: 0 8px 0 10px;
 			    border-left: solid 1px #ccc;
 			    &:hover{
+
 			    box-shadow: none;
 			    color: black;
 			    }
+			    &:focus{
+    				outline: none;
+    			}
+
 		    }
     	}
     
