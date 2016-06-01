@@ -1,6 +1,7 @@
 @extends('layouts.master')
 @section('content')
-    <h1>Napisz nowy artykuł</h1>
+	<div class="col-xs-12">
+    <h1>Dodaj nowy artykuł</h1>
     </hr>
 
     {!! Form::open(['url' => 'articles','files'=>'true']) !!}
@@ -11,4 +12,5 @@
 
 
     @include('errors.list')
+    </div>
 @stop

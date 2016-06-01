@@ -1,7 +1,7 @@
-<a href="{{action('ArticlesController@index')}}">Wróć do listy</a>
+<a href="{{action('ArticlesController@index')}}"><i class="fa fa-undo" aria-hidden="true"></i> Wróć do listy artykułów</a>
 <div class="form-group">
-    {!! Form::label('title','Tytuł:')!!}
-    {!!Form::text('title',null,['class' => 'form-ctntrol'])!!}
+    {!! Form::label('title','Tytuł artykułu:')!!}
+    {!!Form::text('title',null,['class' => 'form-control'])!!}
 </div>
 
 <div class="form-group">
@@ -9,11 +9,11 @@
     {!! Form::textarea('body',null,['class' =>'form-control']) !!}
 </div>
 <div class="form-group">
-    {!! Form::label('published_at','Opublikuj:') !!}
+    {!! Form::label('published_at','Data opublikowania:') !!}
     {!! Form::input('date','published_at',date('Y-m-d'),['class' =>'form-control']) !!}
 </div>
 <div class="form-group">
-    <label for="userfile">Image File</label>
+    <label for="userfile">Obrazek artykułu:</label>
     <input type="file" class="form-control" name="userfile">
 </div>
 
@@ -22,5 +22,5 @@
     {!! Form::select('cat_id',$cat,null,['class'=>'form-control']) !!}
 </div>
 <div class="form-group">
-    {!! Form::submit($submitButtonText, ['class'=>'btn btn-primary form-control']) !!}
+    {!! Form::submit($submitButtonText, ['class'=>'btn btn-primary  col-xs-12 col-md-6']) !!}
 </div>

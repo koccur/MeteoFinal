@@ -48,8 +48,8 @@
             			Ciśnienie / Zachmurzenie
             		</div> -->
 					<div id="weather-later" class=" col-md-12 col-lg-4">
-            			<button type="button" id="hourly" class="btn btn-success">Pogoda Godzinowa</button>
-            			<button type="button" class="btn btn-success">Pogoda Tygodniowa</button>
+            			<a href="{{URL::to('/forecast#godzinowa')}}"><button type="button" id="hourly" class="btn btn-success">Pogoda Godzinowa</button></a>
+            			<a href="{{URL::to('/forecast#tygodniowa')}}"><button type="button" class="btn btn-success">Pogoda Tygodniowa</button></a>
             			<div class="clearfix"></div>
             		</div>
             		<div class="clearfix"></div>
