@@ -11,14 +11,12 @@ use Intervention\Image\ImageManager;
 use Illuminate\Support\Facades\DB;
 
 Route::get('/', function () {
-    return view('pages.home');
+    return view('pages.index');
 });
 Route::get('/contact', function () {
     return view('contact.contact');
 });
-Route::get('/about', function () {
-    return view('contact.about');
-});
+Route::get('/about', 'PagesController@about');
 Route::get('/articles/lista','ArticlesController@lista');
 
 Route::get('/images/gallery',function(){
@@ -32,7 +30,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::resource('users', 'UsersController');
     Route::resource('categories', 'CategoriesController');
     Route::resource('comments', 'CommentsController');
-    Route::resource('about', 'PagesController');
+//    Route::resource('about', 'PagesController');
     Route::resource('', 'PagesController');
     Route::resource('images','ImageController');
     Route::resource('forecast','ForecastController');

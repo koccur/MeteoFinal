@@ -83,9 +83,9 @@
 						{{--Tutaj uporządkowanie tego jak to ma wygladac, np stala wysokosc diva--}}
 			-->
 
-				@if(Request::path()=='/')
-					@include('articles.lista')
-				@endif
+				{{--@if(Request::path()=='/')--}}
+					{{--@include('articles.lista')--}}
+				{{--@endif--}}
 
 					</div>
 				</div>

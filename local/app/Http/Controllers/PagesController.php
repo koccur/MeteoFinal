@@ -16,6 +16,9 @@ class PagesController extends Controller
 //        return \Auth::user();/*sprawdzenie uzytkownika ktory zalogowany */
 		return view('pages.home');
 	}
+	public function about(){
+		return view('contact.about');
+	}
 
 
 
