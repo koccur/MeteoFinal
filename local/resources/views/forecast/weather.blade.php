@@ -55,7 +55,7 @@
         echo intval($obj->hourly->data[$i]->apparentTemperature)."&deg;C</td>";
 //        echo "prawdopodobienśtwo opadów:".$obj->hourly->data[$i]->precipProbability."<br>";
 
-        echo "<td>".$obj->hourly->data[$i]->humidity." / ".$obj->hourly->data[$i]->cloudCover."</td>";
+        echo "<td>".($obj->hourly->data[$i]->humidity*100)."%"." / ".($obj->hourly->data[$i]->cloudCover*100)."%"."</td>";
         echo "<td>".$obj->hourly->data[$i]->windSpeed."m/s"." / ".$obj->hourly->data[$i]->pressure."hPa"."</td>";
 
     }
@@ -72,7 +72,7 @@
         echo date('d-m', $obj->daily->data[$i]->time)."</th><td>";
         echo intval($obj->daily->data[$i]->temperatureMin)."&deg;C / ";
         echo intval($obj->daily->data[$i]->temperatureMax)."&deg;C</td>";
-        echo "<td>".$obj->daily->data[$i]->humidity." / ".$obj->daily->data[$i]->cloudCover."</td>";
+        echo "<td>".($obj->daily->data[$i]->humidity*100)."%"." / ".($obj->daily->data[$i]->cloudCover*100)."%"."</td>";
 //        echo "zachmurzenie".$obj->daily->data[$i]->cloudCover."<br>";
         echo "<td>".$obj->daily->data[$i]->windSpeed."m/s"." / ".$obj->daily->data[$i]->pressure."hPa"."</td>";
     }
