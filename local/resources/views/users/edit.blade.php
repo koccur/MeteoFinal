@@ -18,7 +18,7 @@
     </div>
        
     @endif
-    @if(Auth::user()->can('edit_user'))
+    @if(Auth::user()->can('can_edit_user'))
     <div class="form-group">
         {!! Form::label('role_id','Rola:') !!}
         {!! Form::select('role_id',$role,null,['class'=>'form-control']) !!}

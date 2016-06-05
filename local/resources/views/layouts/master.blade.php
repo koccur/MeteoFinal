@@ -15,23 +15,20 @@
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-sm-12 actual-weather-bar">
-					<h3> 
-
-					</h3>
-					<div id="custom-search-input">
-                		<div class="input-group">
-                    		<input type="text" class="form-control form-control-costum" placeholder="Wybierz miejscowość" />
-                    		<span class="input-group-btn">
-                        		<button class="btn btn-info" type="button">
-                            	<i class="fa fa-search" aria-hidden="true"></i>
-                        		</button>
-                        		
-                        		<button onclick="getLocation()" class="btn btn-info" type="button">
-                            	<i class="fa fa-location-arrow" aria-hidden="true"></i>
-                        		</button>
-                    		</span>
-                		</div>
-            		</div>
+					{{--<div id="custom-search-input">--}}
+                		{{--<div class="input-group">--}}
+                    		{{--<input type="text" class="form-control form-control-costum" placeholder="Wybierz miejscowość" />--}}
+                    		{{--<span class="input-group-btn">--}}
+                        		{{--<button class="btn btn-info" type="button">--}}
+                            	{{--<i class="fa fa-search" aria-hidden="true"></i>--}}
+                        		{{--</button>--}}
+                        		{{----}}
+                        		{{--<button onclick="getLocation()" class="btn btn-info" type="button">--}}
+                            	{{--<i class="fa fa-location-arrow" aria-hidden="true"></i>--}}
+                        		{{--</button>--}}
+                    		{{--</span>--}}
+                		{{--</div>--}}
+            		{{--</div>--}}
 					<div class="contents">
 					@include('layouts.weather')
 

@@ -1,6 +1,4 @@
 <?php
-
-
 use App\Permission;
 use App\Role;
 use App\Models\User;
