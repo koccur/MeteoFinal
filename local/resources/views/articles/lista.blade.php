@@ -9,7 +9,7 @@
 				</div>
 	        	<div class="media-body">
 	            <h5 class="media-heading">{{$article->title}}</h5>
-				<p>{{$article->body}}</p>
+				<p>{{\Illuminate\Support\Str::limit(strip_tags($article->body),80)}}</p>
 				</div>
 	        </div>
 	    </a>
