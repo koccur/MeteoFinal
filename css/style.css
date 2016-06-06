@@ -4950,12 +4950,13 @@ footer {
     width: 20%; }
   .articles article #content-article {
     display: inline-block;
-    width: 55%;
-    height: 100%; }
+    width: 75%;
+    height: 100%;
+    margin-left:10px;}
     .articles article #content-article .body {
       margin: 10px 0 0 15px;
       font-size: 2vw;
-      height: 12.8vw;
+      height: 3.8vw;
       display: block;
       display: -webkit-box;
       line-height: 1.6;
