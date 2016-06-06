@@ -7,10 +7,14 @@
 <div class="form-group">
     {!! Form::label('body','Treść:') !!}
     {!! Form::textarea('body',null,['class' =>'form-control']) !!}
+    <script>
+        CKEDITOR.replace('body');
+    </script>
 </div>
 <div class="form-group">
     {!! Form::label('published_at','Data opublikowania:') !!}
     {!! Form::input('date','published_at',date('Y-m-d'),['class' =>'form-control']) !!}
+
 </div>
 <div class="form-group">
     <label for="userfile">Obrazek artykułu:</label>

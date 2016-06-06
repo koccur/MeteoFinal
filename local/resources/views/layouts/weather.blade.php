@@ -1,5 +1,6 @@
 <script>
     $(document).ready(function($){
+
         var key="22d2bd3c5dab42a265e7c10415f821e3";
         var urlpath,lat,lon;
 //        if(navigator.geolocation){
@@ -8,6 +9,7 @@
 //        else{
 //            urlpath="53.7442,20.4557";
 //        }
+        var skycons=new Skycons({"color":"pink"});
 
     function getLocation(position){
         lat=position.coords.latitude;
@@ -36,6 +38,27 @@
                     $('#humidity').html("Wilgotność</br><h5>"+(humidity*100)+"%</h5>");
                     $('#cloud').html("Zachmurzenie</br><h5>"+(cloud*100)+"%</h5>");
                     $('#wind').html("Wiatr</br><h5>"+ wind+"m/s</h5>");
+                    var icons = new Skycons({
+                                "color": "black"
+                            }),
+
+                    //The items in the array match the weather condiitons provided by Dark Sky.  In order to invoke the icons
+                    //you must loop through the DOM to find the matching conditions
+                            list = [
+                                "clear-day", "clear-night", "partly-cloudy-day",
+                                "partly-cloudy-night", "cloudy", "rain", "sleet", "snow", "wind",
+                                "fog"],
+                            i;
+
+                    //Loop to search through classes to find weather type names
+                    for (i = list.length; i--;) {
+                        var weatherType = list[i],
+                                elements = document.getElementsByClassName(weatherType);
+                        for (e = elements.length; e--;) {
+                            icons.set(elements[e], weatherType);
+                        }
+                    }
+                    icons.play();
                 },
                 error: function (request, status, err) {
                     if (status == "timeout") {
@@ -45,6 +68,7 @@
                 }
             })
         };
+
     })
 </script>
 <?php
@@ -60,6 +84,8 @@ date_default_timezone_set($obj->timezone);
 echo "<div id='errorZone'>
 <div id='details'></div>
 </div>";
+echo $obj->currently->summary;
+//echo "<div id='clear-day' width='64' height='64'>"."<canvas id='icon1'>".$obj->currently->icon."</div>"."</div>";
 echo "<div id='temp' class='cols col-xs-6 col-lg-2'>Aktualna<h5>".intval($obj->currently->temperature)."&deg;C"."</div>";
 echo "<div id='tempFeel' class='cols col-xs-6 col-lg-2'>Odczuwalna <h5>".intval($obj->currently->apparentTemperature)."&deg;C</h5>"."</div>";
 echo "<div id='pressure' class='cols col-xs-6 col-lg-2'>Ciśnienie <h5>".$obj->currently->pressure." hPa "."</h5></div>";
@@ -68,3 +94,22 @@ echo "<div id='humidity' class='cols col-xs-6 col-lg-2'>Wilgotność <h5>".($obj
 echo "<div id='cloud' class='cols col-xs-6 col-lg-2'>Zachmurzenie<h5>".($obj->currently->cloudCover*100)."%"."</h5></div>";
 echo "<div id='wind' class='cols col-xs-6 col-lg-2'>Wiatr <h5>".$obj->currently->windSpeed." m/s"."</h5></div>";
 ?>
+<script>
+    var icons = new Skycons({"color": "#fff"}),
+            list  = [
+                "clear-day", "clear-night", "partly-cloudy-day",
+                "partly-cloudy-night", "cloudy", "rain", "sleet", "snow", "wind",
+                "fog"
+            ],
+            i;
+
+    for(i = list.length; i--; ) {
+        var weatherType = list[i],
+                elements = document.getElementsByClassName( weatherType );
+        for (e = elements.length; e--;){
+            icons.set( elements[e], weatherType );
+        }
+    }
+
+    icons.play();
+</script>

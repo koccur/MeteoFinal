@@ -3,7 +3,7 @@
 <div class="col-xs-12">
     <h1>Edytuj użytkownika</h1>
     {{--</hr>--}}
-    {{Form::model($raz,['method'=>'PATCH','route'=>['users.update',$raz->id],'files'=>'true'])}}
+    {{Form::model($raz,['method'=>'PATCH','action'=>['UsersController@update',$raz->id],'files'=>'true'])}}
 {{--        {{   Form::open($raz, array('route' => array('users.update', $raz->id))) }}--}}
 {{--       {{ Form::open(['url'=>'users/update',$raz->id]) }}--}}
 
@@ -22,15 +22,13 @@
     <div class="form-group">
         {!! Form::label('role_id','Rola:') !!}
         {!! Form::select('role_id',$role,null,['class'=>'form-control']) !!}
-{{--        {{$raz->sync($role)}}--}}
-{{--        {{$raz->attachRole($role)}}--}}
-
-        {{--{{dd($role)}}--}}
+        {{--{{$raz->roles()->attach($role_id)}}--}}
+{{--        {{dd($role)}}--}}
     </div>
         @endif
     <div class="form-group">
-        <button type="button" class="btn btn-primary col-xs-12 col-md-6">{!! Form::submit() !!}</button>
-        
+        {!! Form::submit('Zapisz',['class'=>'btn btn-primary col-xs-12 col-md-6']) !!}
+        {!! Form::close() !!}
     </div>
 
     @include('errors.list')

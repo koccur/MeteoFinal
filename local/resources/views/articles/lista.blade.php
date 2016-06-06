@@ -1,5 +1,5 @@
-{{$articles=App\Article::latest('published_at')->published()->paginate(4)}}
 
+{{$articles=App\Article::latest('published_at')->published()->paginate(4)}}
 @foreach($articles as $article)
 	<article>
 	    <a href="{{action('ArticlesController@show',$article->id)}}">
@@ -15,4 +15,5 @@
 	    </a>
 	</article>
 	@endforeach
+
 <hr class="divider">

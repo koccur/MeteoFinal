@@ -10,12 +10,10 @@
     <!-- jQuery -->
     <script src={{URL::asset('js/jquery-2.2.4.min.js')}}></script>
     <script src={{URL::asset('js/jqueryUI/jquery-ui.min.js')}}></script>
-{{--    <script src={{URL::asset('js/maperizer/List.js')}}></script>--}}
-{{--    <script src={{URL::asset('js/maperizer/Maperizer.js')}}></script>--}}
-{{--    <script src={{URL::asset('js/maperizer/map-options.js')}}></script>--}}
-{{--    <script src={{URL::asset('js/maperizer/jqueryui.maperizer.js')}}></script>--}}
     <script src={{URL::asset('js/scripts.js')}}></script>
+    <script src={{URL::asset('js/skycons/skycons.js')}}></script>
     <script type="text/javascript" src="http://cssmapsplugin.com/4/jquery.cssmap.js"></script>
     <script src="http://maps.googleapis.com/maps/api/js?sensor=false&amp;libraries=places" type="text/javascript"></script>
+    <script src="//cdn.ckeditor.com/4.5.9/standard/ckeditor.js"></script>
 
 </head>

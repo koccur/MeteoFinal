@@ -16,6 +16,7 @@
             </div>
         </div>
         <article>
+            {{$article->published_at}}
             <a href="{{action('ArticlesController@show',$article->id)}}">
             <div id="image-article">
             <img class="img-fluid" src="{{URL::asset($article->image_url_s)}}" alt="" />
@@ -25,8 +26,7 @@
             <p class="body">
                     {{$article->title}}
             </p>
-            
-            
+            {{\Illuminate\Support\Str::limit(strip_tags($article->body),200)}}
             </div>
             </a>
         </article>
