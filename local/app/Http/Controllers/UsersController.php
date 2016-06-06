@@ -44,24 +44,27 @@ class UsersController extends Controller
     public function update($id,UpdateUserRequest $request){
         $zm=User::findOrFail($id);
         $zm->email=Input::get('email');
-
         $image = new Image;
         // upload the image //
-        $file = $request->file('userfile');
-        $destination_path = 'img/avatar/';
+        if($request->file('userfile')) {
+            $file = $request->file('userfile');
+            $destination_path = 'img/avatar/';
 //        dd($file);
-        $filename = str_random(6).'_'.$file->getClientOriginalName();
-        $file->move($destination_path, $filename);
-        //        // save image data into database //
-        $image->file = $destination_path . $filename;
-        $image->destination_path=$destination_path;
-        $image->filename=$filename;
-        $image->caption = $request->input('title');
-        $zmm=Img::make($image->file);
-        $zmm->resize(64,64);
+            $filename = str_random(6) . '_' . $file->getClientOriginalName();
+            $file->move($destination_path, $filename);
+            //        // save image data into database //
+            $image->file = $destination_path . $filename;
+            $image->destination_path = $destination_path;
+            $image->filename = $filename;
+            $image->caption = $request->input('title');
+            $zmm = Img::make($image->file);
+            $zmm->resize(64, 64);
 //        dd($zmm);
-        $zmm->save($destination_path.'thumbnails/'.$filename);
-        $zm->image_url=$destination_path.'thumbnails/'.$filename;
+            $zmm->save($destination_path . 'thumbnails/' . $filename);
+            $zm->image_url = $destination_path . 'thumbnails/' . $filename;
+        }
+        $log=DB::delete('DELETE FROM `role_user` WHERE `user_id`= ?',[$zm->id]);
+        $zm->roles()->attach($request->role_id);
         $zm->update($request->all());
         return redirect('users');
     }
