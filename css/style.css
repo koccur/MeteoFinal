@@ -4947,7 +4947,7 @@ footer {
   .articles article #image-article {
     display: inline-block;
     float: left;
-    width: 45%; }
+    width: 20%; }
   .articles article #content-article {
     display: inline-block;
     width: 55%;
