@@ -62,7 +62,7 @@ Route::get('/AddRoleUser', function () {
     $mod->display_name = 'Moderator';
     $mod->name = 'Mod';
     $mod->save();
-//
+
     $user = Role::where('name', '=', 'User')->first();
     $admin = Role::where('name', '=', 'Admin')->first();
     $mod = Role::where('name', '=', 'Mod')->first();

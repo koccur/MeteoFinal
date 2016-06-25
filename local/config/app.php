@@ -161,6 +161,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Nwidart\LaravelForecast\LaravelForecastServiceProvider::class,
+        Ktquez\Tinymce\TinymceServiceProvider::class,
 
 
     ],

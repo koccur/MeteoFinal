@@ -30,6 +30,10 @@ class ComposerStaticInita410fd93542ae0875362249f9c27d4db
         array (
             'XdgBaseDir\\' => 11,
         ),
+        'U' => 
+        array (
+            'Unisharp\\Ckeditor\\' => 18,
+        ),
         'S' => 
         array (
             'Symfony\\Polyfill\\Util\\' => 22,
@@ -74,6 +78,10 @@ class ComposerStaticInita410fd93542ae0875362249f9c27d4db
             'League\\Flysystem\\' => 17,
             'Lanz\\Commentable\\' => 17,
         ),
+        'K' => 
+        array (
+            'Ktquez\\Tinymce\\' => 15,
+        ),
         'I' => 
         array (
             'Intervention\\Image\\' => 19,
@@ -115,6 +123,10 @@ class ComposerStaticInita410fd93542ae0875362249f9c27d4db
         'XdgBaseDir\\' => 
         array (
             0 => __DIR__ . '/..' . '/dnoegel/php-xdg-base-dir/src',
+        ),
+        'Unisharp\\Ckeditor\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/unisharp/laravel-ckeditor',
         ),
         'Symfony\\Polyfill\\Util\\' => 
         array (
@@ -219,6 +231,10 @@ class ComposerStaticInita410fd93542ae0875362249f9c27d4db
         'Lanz\\Commentable\\' => 
         array (
             0 => __DIR__ . '/..' . '/lanz/laravel-commentable/src/Commentable',
+        ),
+        'Ktquez\\Tinymce\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/ktquez/laravel-tinymce/src',
         ),
         'Intervention\\Image\\' => 
         array (

@@ -10,7 +10,10 @@
         "laravelcollective/html": "^5.2",
         "lanz/laravel-commentable": "2.0.x-dev",
         "zizaco/entrust": "5.2.x-dev",
-        "intervention/image": "2.3.7"
+        "intervention/image": "2.3.7",
+        "ckeditor/ckeditor": "4.5.9",
+        "unisharp/laravel-ckeditor": "4.5.7",
+        "ktquez/laravel-tinymce": "v1.0.1"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

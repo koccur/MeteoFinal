@@ -3818,5 +3818,149 @@
             "thumbnail",
             "watermark"
         ]
+    },
+    {
+        "name": "ckeditor/ckeditor",
+        "version": "4.5.9",
+        "version_normalized": "4.5.9.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/ckeditor/ckeditor-releases.git",
+            "reference": "e3d4dba95343f1b33d8d9a08b78cd080efa0cdc1"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/ckeditor/ckeditor-releases/zipball/e3d4dba95343f1b33d8d9a08b78cd080efa0cdc1",
+            "reference": "e3d4dba95343f1b33d8d9a08b78cd080efa0cdc1",
+            "shasum": ""
+        },
+        "time": "2016-05-12 15:38:49",
+        "type": "library",
+        "installation-source": "dist",
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0+",
+            "LGPL-2.1+",
+            "MPL-1.1+"
+        ],
+        "authors": [
+            {
+                "name": "CKSource",
+                "homepage": "http://cksource.com"
+            }
+        ],
+        "description": "JavaScript WYSIWYG web text editor.",
+        "homepage": "http://ckeditor.com",
+        "keywords": [
+            "CKEditor",
+            "editor",
+            "fckeditor",
+            "html",
+            "javascript",
+            "richtext",
+            "text",
+            "wysiwyg"
+        ]
+    },
+    {
+        "name": "unisharp/laravel-ckeditor",
+        "version": "4.5.7",
+        "version_normalized": "4.5.7.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/UniSharp/laravel-ckeditor.git",
+            "reference": "cc9a5505dc3c3a060944aa8b5ce13515547263ec"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/UniSharp/laravel-ckeditor/zipball/cc9a5505dc3c3a060944aa8b5ce13515547263ec",
+            "reference": "cc9a5505dc3c3a060944aa8b5ce13515547263ec",
+            "shasum": ""
+        },
+        "require": {
+            "illuminate/support": "~5.0"
+        },
+        "time": "2016-02-16 05:56:20",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Unisharp\\Ckeditor\\": "./"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0+",
+            "LGPL-2.1+",
+            "MPL-1.1+"
+        ],
+        "authors": [
+            {
+                "name": "CKSource",
+                "homepage": "http://cksource.com"
+            },
+            {
+                "name": "UniSharp Ltd. (Composer Package Maintainer)",
+                "homepage": "http://www.unisharp.com"
+            }
+        ],
+        "description": "JavaScript WYSIWYG web text editor (for laravel).",
+        "homepage": "http://ckeditor.com",
+        "keywords": [
+            "CKEditor",
+            "editor",
+            "fckeditor",
+            "html",
+            "javascript",
+            "laravel",
+            "richtext",
+            "text",
+            "wysiwyg"
+        ]
+    },
+    {
+        "name": "ktquez/laravel-tinymce",
+        "version": "v1.0.1",
+        "version_normalized": "1.0.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/ktquez/laravel-tinymce.git",
+            "reference": "ec6e4b176f463f7557625a6eda9c09ae1b3c4802"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/ktquez/laravel-tinymce/zipball/ec6e4b176f463f7557625a6eda9c09ae1b3c4802",
+            "reference": "ec6e4b176f463f7557625a6eda9c09ae1b3c4802",
+            "shasum": ""
+        },
+        "time": "2016-03-31 11:31:48",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Ktquez\\Tinymce\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Alan Albuquerque: ktquez",
+                "email": "ktquez@gmail.com"
+            }
+        ],
+        "description": "TinyMCE editor for Laravel and Lumen Framework",
+        "homepage": "https://github.com/ktquez/laravel-tinymce",
+        "keywords": [
+            "CKEditor",
+            "editor",
+            "laravel",
+            "lumen",
+            "textarea",
+            "tinymce",
+            "wysiwyg"
+        ]
     }
 ]

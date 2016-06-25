@@ -40,3 +40,23 @@ h1 {
 	@include no_padding;
 }
 
+ul.pagination{
+	margin-top: 0;
+	@include list_style_none;
+	width: 100%;
+	display: block;
+	text-align: center;
+		li{
+			margin: 0 5px;
+			display: inline;
+			
+		}
+}
+
+#searchTextField{
+	color: black;
+	padding-left: 10px;
+}
+#szukaj{
+	padding-left: 0;
+}

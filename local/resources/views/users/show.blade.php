@@ -3,10 +3,10 @@
 @section('content')
 @if(!Auth::guest())
 <div class="user-profile">
-    <div id="avatar" class="col-xs-4 col-xs-offset-4 col-md-3 col-md-offset-0">
-           <img class="img-fluid" src="{{URL::asset($user->image_url)}}" alt="" />
+    <div id="avatar" class="col-xs-1">
+           <img  src="{{URL::asset($user->image_url)}}" alt="" />
     </div>
-    <div class="col-xs-12 col-md-9"> 
+    <div class="col-sm-12 col-md-11">
         <div id="user-name">{{$user->username}} </div>
         <div id="user-email">Email: {{$user->email}}</div>
         <div class="user-role">
@@ -31,7 +31,7 @@
         @endif
     </div>
     <div class="clearfix"></div>
-    {{--<div class="recent-comment">--}}
+    <div class="recent-comment">
     {{--<div class="col-xs-12">--}}
         {{--<h3> Ostatnie komentarze użytkownika:</h3>--}}
         {{--<p> <i class="fa fa-arrow-right" aria-hidden="true"></i>--}}
@@ -51,7 +51,7 @@
     {{--<div class="clearfix"></div>--}}
         {{----}}
 
-    <!-- <button class="btn btn-primary form-control">usun</button> -->
+    {{--<!-- <button class="btn btn-primary form-control">usun</button> -->--}}
         {!! Form::close() !!}
  </div>
 @endif

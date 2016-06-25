@@ -12,15 +12,19 @@
         var skycons=new Skycons({"color":"pink"});
 
     function getLocation(position){
+
         lat=position.coords.latitude;
         lon=position.coords.longitude;
         urlpath= key +"/"+ lat+ "," + lon;
 //        loadWeatherData();
     }
+
         function loadWeatherData() {
             $.ajax({
                 url: "https://api.forecast.io/forecast" + "/" + urlpath + "?lang=pl&units=si",
                 async: false,
+                type: "POST",
+                data: myArray,
                 dataType: "jsonp",
                 timeout: 4000,
                 success: function (parsed_json) {
@@ -74,8 +78,6 @@
 <?php
 
 
-//$lat=
-//$lon=
 $json=file_get_contents('https://api.forecast.io/forecast/22d2bd3c5dab42a265e7c10415f821e3/53.7442,20.4557?lang=pl&units=si');
 $obj=json_decode($json);
 //echo $obj->latitude." ";
@@ -84,15 +86,15 @@ date_default_timezone_set($obj->timezone);
 echo "<div id='errorZone'>
 <div id='details'></div>
 </div>";
-echo $obj->currently->summary;
+//echo $obj->currently->summary;
 //echo "<div id='clear-day' width='64' height='64'>"."<canvas id='icon1'>".$obj->currently->icon."</div>"."</div>";
-echo "<div id='temp' class='cols col-xs-6 col-lg-2'>Aktualna<h5>".intval($obj->currently->temperature)."&deg;C"."</div>";
-echo "<div id='tempFeel' class='cols col-xs-6 col-lg-2'>Odczuwalna <h5>".intval($obj->currently->apparentTemperature)."&deg;C</h5>"."</div>";
-echo "<div id='pressure' class='cols col-xs-6 col-lg-2'>Ciśnienie <h5>".$obj->currently->pressure." hPa "."</h5></div>";
-echo "<div id='rain' class='cols col-xs-6 col-lg-2'>Szansa na opady<h5>".($obj->currently->precipProbability*100)."%"."</h5></div>";
-echo "<div id='humidity' class='cols col-xs-6 col-lg-2'>Wilgotność <h5>".($obj->currently->humidity*100)."%"."</h5></div>";
-echo "<div id='cloud' class='cols col-xs-6 col-lg-2'>Zachmurzenie<h5>".($obj->currently->cloudCover*100)."%"."</h5></div>";
-echo "<div id='wind' class='cols col-xs-6 col-lg-2'>Wiatr <h5>".$obj->currently->windSpeed." m/s"."</h5></div>";
+echo "<div id='temp' class='cols col-xs-12 col-lg-2'>Aktualna<h5>".floatval($obj->currently->temperature)."&deg;C"."</div>";
+echo "<div id='tempFeel' class='cols col-xs-12 col-lg-2'>Odczuwalna <h5>".floatval($obj->currently->apparentTemperature)."&deg;C</h5>"."</div>";
+echo "<div id='pressure' class='cols col-xs-12 col-lg-2'>Ciśnienie <h5>".$obj->currently->pressure." hPa "."</h5></div>";
+echo "<div id='rain' class='cols col-xs-12 col-lg-2'>Szansa na opady<h5>".($obj->currently->precipProbability*100)."%"."</h5></div>";
+echo "<div id='humidity' class='cols col-xs-12 col-lg-2'>Wilgotność <h5>".($obj->currently->humidity*100)."%"."</h5></div>";
+echo "<div id='cloud' class='cols col-xs-12 col-lg-2'>Zachmurzenie<h5>".($obj->currently->cloudCover*100)."%"."</h5></div>";
+echo "<div id='wind' class='cols col-xs-12 col-lg-2'>Wiatr <h5>".$obj->currently->windSpeed." m/s"."</h5></div>";
 ?>
 <script>
     var icons = new Skycons({"color": "#fff"}),

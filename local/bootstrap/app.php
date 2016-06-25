@@ -40,6 +40,8 @@ $app->singleton(
     Illuminate\Contracts\Debug\ExceptionHandler::class,
     App\Exceptions\Handler::class
 );
+//$app->configure('tinymce');
+//$app->register('Ktquez\Tinymce\TinymceServiceProvider');
 
 /*
 |--------------------------------------------------------------------------

@@ -32,7 +32,8 @@ public function __construct(){
     }
     public function lista(){
         $articles= Article::latest('published_at')->published()->paginate(5);
-        return view('articles.lista',compact('articles'));
+        $art=Article::latest('published_at');
+        return view('articles.lista',compact('articles',$art));
     }
     public function show($id)
     {
@@ -56,12 +57,9 @@ public function __construct(){
             $article->category_id=Input::get('cat_id');
             $cat=Category::findOrFail($article->category_id);
             $article->cat_name=$cat->title;
-
-//            dd($request);
             $image = new Image;
             // upload the image //
             $file = $request->file('userfile');
-//            dd($file);
             $destination_path = 'img/obrazki/';
             $filename = str_random(6).'_'.$file->getClientOriginalName();
             $file->move($destination_path, $filename);
@@ -82,7 +80,6 @@ public function __construct(){
     public function edit($id){//poprawa
         $article=Article::findOrFail($id);
         $cat=Category::pluck('title','id');
-//        var_dump($article);
             return view('articles.edit', compact('article','id','cat'));
     }
 

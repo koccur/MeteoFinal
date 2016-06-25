@@ -1,5 +1,5 @@
 
-{{$articles=App\Article::latest('published_at')->published()->paginate(4)}}
+<div style="display:none">{{  $articles=App\Article::latest('published_at')->published()->paginate(4)}}</div>
 @foreach($articles as $article)
 	<article>
 	    <a href="{{action('ArticlesController@show',$article->id)}}">
@@ -8,12 +8,11 @@
 	        		<img class="media-object" src="{{URL::asset($article->image_url_s)}}" alt="...">
 				</div>
 	        	<div class="media-body">
-	            <h5 class="media-heading">{{$article->title}}</h5>
+	            <h6 class="media-heading">{{$article->title}}</h6>
 				<p>{{\Illuminate\Support\Str::limit(strip_tags($article->body),80)}}</p>
 				</div>
 	        </div>
 	    </a>
 	</article>
 	@endforeach
-
-<hr class="divider">
+{{  $articles=App\Article::latest('published_at')->published()->paginate(4)}}

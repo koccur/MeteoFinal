@@ -2,10 +2,10 @@
 
 @section('content')
     <div class="article-show">
-
-    <img class="img-fluid" src="{{URL::asset($article->image_url)}}" alt="" />
+    <div id="ob" style="background-image:url('{{URL::asset($article->image_url)}}'); background-repeat: no-repeat;background-position: center; height: 500px;background-size:100%;"></div>
+{{--    <img class="img-fluid" src="{{URL::asset($article->image_url)}}" alt="" />--}}
     {{--<img id="head-img" class="img-fluid" src="http://img.cda.pl/obr/oryginalne/850ca7d90566b9ed82c60d9d50771230.jpg" alt="" />--}}
-    <div id="article-content-box">
+    <div id="article-content-box" style="padding-top:20px;">
             <h1>{{ $article->title }}</h1>
             <div id="cat-name">Kategoria: {{$article->cat_name}}</div>
             <div id="published"><i class="fa fa-clock-o"></i> {{$article->published_at}}</div>
@@ -40,7 +40,6 @@
                     
                 {{--</div>--}}
             {{--</div>--}}
-        </div>
         {{--<header>--}}
             {{--<h3>Komentarze:</h3>--}}
         {{--</header>--}}
@@ -68,10 +67,10 @@
                 {{--</div>--}}
             {{--</div>--}}
         {{--</article>--}}
+    </div>
         <div class="row">
             
         </div>
-    </div>
     <div>
         <a href="{{action('CommentsController@store')}}">Komentuj!</a>
         @if($comments)
@@ -92,5 +91,6 @@
             </ul>
         @endif
     </div>
-</div>
+
+
 @stop
