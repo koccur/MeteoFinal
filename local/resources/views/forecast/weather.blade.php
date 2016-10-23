@@ -4,7 +4,7 @@
         var key="22d2bd3c5dab42a265e7c10415f821e3";
         var urlpath,lat,lng;
         var myArray;
-
+        var skycons=new Skycons(); //icons from darkSky
         function initialize() {
             var input = document.getElementById('searchTextField');
             var autocomplete = new google.maps.places.Autocomplete(input);
@@ -71,6 +71,7 @@
                             document.getElementById(td[i+1].innerHTML=godz[y]['temperature']+'℃'+' / '+godz[y]['apparentTemperature']+'℃');
                             document.getElementById(td[i+2].innerHTML=Math.round(godz[y]['humidity']*100)+' %' + ' / '+Math.round(godz[y]['precipProbability']*100) +'%');
                             document.getElementById(td[i+3].innerHTML=godz[y]['windSpeed']+'m/s'+' / '+godz[y]['pressure']+'hPa');
+                            document.getElementById(td[i+3].innerHTML=godz[y]['precipIntensity']);
                         }
                         y=0;
                         for(i=48*3;i<48*3+7*3;i+=3,y++){
@@ -103,51 +104,59 @@
                 <input type="hidden" id="cityLng" name="cityLng" />
         </ul>
 <?php
-    $json=file_get_contents('https://api.forecast.io/forecast/22d2bd3c5dab42a265e7c10415f821e3/53.7442,20.4557?lang=pl&units=si');
-        $obj=json_decode($json);?>
-        {{--@include('forecast.Hourly1')--}}
-        {{--@include('forecast.Hourly2')--}}
-        {{--@include('forecast.Daily')--}}
-
-<?php
-        echo "<p id='timeZone'></p>";
-//    echo "<div id='lon'></div>";
-//    echo "<div id='lat'></div>";
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $details = json_decode(file_get_contents("http://ipinfo.io/{$ip}/json"));
+        $ip=$details->loc;
+        $json=file_get_contents("https://api.forecast.io/forecast/22d2bd3c5dab42a265e7c10415f821e3/{$ip}?lang=pl&units=si");
+        $obj=json_decode($json);
     date_default_timezone_set($obj->timezone);
     echo "<p id='godzinowa'>Pogoda na najbliższe 48 godzin </p>";
     echo "<table class='table table-weather'><thead><tr>";
-    echo "<th>Data i godzina</th><th>Temperatura / Odczuwalna</th><th>Wilgotność / Zachmurzenie</th><th>Wiatr / Ciśnienie</th></tr></thead><tbody>";
+    echo "<th>Data i godzina</th><th>Temperatura / Odczuwalna</th><th>Opady/ Zachmurzenie</th><th>Wiatr / Ciśnienie</th></tr></thead><tbody>";
 
         for ($i = 1; $i <= 48; $i++) {
         echo "<tr><td>";
         echo date('d-m H:i', $obj->hourly->data[$i]->time)."</th><td>";
         echo floatval($obj->hourly->data[$i]->temperature)."&deg;C / ";
         echo floatval($obj->hourly->data[$i]->apparentTemperature)."&deg;C</td>";
-        echo "<td>".($obj->hourly->data[$i]->humidity*100)."%"." / ".($obj->hourly->data[$i]->cloudCover*100)."%"."</td>";
+        echo "<td>".($obj->hourly->data[$i]->precipIntensity*100)." / ".($obj->hourly->data[$i]->cloudCover*100)."%"."</td>";
         echo "<td>".$obj->hourly->data[$i]->windSpeed."m/s"." / ".$obj->hourly->data[$i]->pressure."hPa"."</td>";
-    }
+        echo "<td>"?>
+        <canvas id="<?php echo "icon".$i?>" width="64" height="64"></canvas>
+        <script>
+            skycons.add("<?php echo "icon".$i?>","<?php echo $obj->hourly->data[$i]->icon;?>");
+        </script>
+<?php
+        }
     echo "</tbody></table> <br>";
 
     echo "<p id='tygodniowa'>Pogoda na najbliższe 7 dni </p>";
     echo "<table class='table table-weather'> <thead><tr>";
-    echo "<th>Data i godzina</th><th>Min Temp / Max Temp</th><th>Wilgotność / Zachmurzenie</th><th>Wiatr / Ciśnienie</th></tr></thead><tbody>";
+    echo "<th>Data i godzina</th><th>Min Temp / Max Temp</th><th>Maksymalne Opady / Zachmurzenie</th><th>Wiatr / Ciśnienie</th></tr></thead><tbody>";
     for ($i = 1; $i <= 7; $i++) {
         echo "<tr><th scope='row'>";
-        echo "<div id='sunrise'>Wschod ".date('H:i',$obj->daily->data[$i]->sunriseTime)."<br></div>";
-        echo "<div id='sunset'>Zachod ".date('H:i',$obj->daily->data[$i]->sunsetTime)."<br></div>";
-
+        echo $obj->daily->data[$i]->summary;
+        echo "<div id='sunrise'>Wschód ".date('H:i',$obj->daily->data[$i]->sunriseTime)."<br></div>";
+        echo "<div id='sunset'>Zachód ".date('H:i',$obj->daily->data[$i]->sunsetTime)."<br></div>";
         echo date('d-m', $obj->daily->data[$i]->time)."</th><td>";
         echo floatval($obj->daily->data[$i]->temperatureMin)."&deg;C / ";
         echo floatval($obj->daily->data[$i]->temperatureMax)."&deg;C</td>";
-        echo "<td>".($obj->daily->data[$i]->humidity*100)."%"." / ".($obj->daily->data[$i]->cloudCover*100)."%"."</td>";
+        echo "<td>".($obj->daily->data[$i]->precipIntensityMax*100)." / ".($obj->daily->data[$i]->cloudCover*100)."%"."</td>";
         echo "<td>".$obj->daily->data[$i]->windSpeed."m/s"." / ".$obj->daily->data[$i]->pressure."hPa"."</td>";
+        echo "<td>"?>
+        <canvas id="<?php echo "icon_daily".$i?>" width="64" height="64"></canvas>
+        <script>
+            skycons.add("<?php echo "icon_daily".$i?>","<?php echo $obj->daily->data[$i]->icon;?>");
+        </script>
+
+<?php
     }
     echo "</tbody></table>";
     ?>
        <?php echo "</div>";?>
     </div>
 </div>
-
-
-
+    <script>
+        skycons.play();
+    </script>
     @stop
