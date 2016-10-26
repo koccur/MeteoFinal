@@ -36,7 +36,6 @@
                         var wind = parsed_json['currently']['windSpeed'];
                         var godz=parsed_json['hourly']['data'];
                         var dzien=parsed_json['daily']['data'];
-
                         $('#lat').html(lat);
                         $('#godz').html(godz);
                         $('#lon').html(lon);
@@ -49,9 +48,10 @@
                         $('#cloud').html("Zachmurzenie</br><h5>"+Math.round(cloud*100)+"%</h5>");
                         $('#wind').html("Wiatr</br><h5>"+ wind+"m/s</h5>");
                         var y=0;
+                        var yzx=1;
                         var i;
                         var td= document.getElementsByTagName("td");
-                        for (i=0;i<48*4;i+=4,y++){
+                        for (i=0;i<48*5;i+=5,y++){
                             var date = new Date(godz[y]['time']*1000);
                             var day = date.getDate();
                             var month;
@@ -71,14 +71,22 @@
                             document.getElementById(td[i+1].innerHTML=godz[y]['temperature']+'℃'+' / '+godz[y]['apparentTemperature']+'℃');
                             document.getElementById(td[i+2].innerHTML=Math.round(godz[y]['humidity']*100)+' %' + ' / '+Math.round(godz[y]['precipProbability']*100) +'%');
                             document.getElementById(td[i+3].innerHTML=godz[y]['windSpeed']+'m/s'+' / '+godz[y]['pressure']+'hPa');
-                            document.getElementById(td[i+3].innerHTML=godz[y]['precipIntensity']);
+                            var iconNumber="icon"+yzx;
+//                            var iconString='<'+"canvas id="+"'"+iconNumber+"'"+"width="+'"64"'+"height="+'"64"'+'></canvas>';
+                            skycons.set(iconNumber,godz[yzx]['icon']);
+                            yzx++;
+
                         }
                         y=0;
+                        yzx=0;
                         for(i=48*3;i<48*3+7*3;i+=3,y++){
                             document.getElementById(time[i].innerHTML=dzien[y]['time']);
                             document.getElementById(td[i].innerHTML=dzien[y]['temperatureMin']+'℃'+' / '+ dzien[y]['temperatureMax']+'℃');
                             document.getElementById(td[i+1].innerHTML=Math.round(dzien[y]['humidity']*100)+' %'+ ' / '+ Math.round(dzien[y]['precipProbability']*100) + '%');
                             document.getElementById(td[i+2].innerHTML=dzien[y]['windSpeed']+'m/s'+' / '+ dzien[y]['pressure']+'hPa');
+                            var iconNumber="icon"+yzx;
+                            skycons.set(iconNumber,dzien[yzx]['icon']);
+                            yzx++;
                         }
                     },
                     error: function (request, status, err) {
@@ -113,19 +121,19 @@
     echo "<p id='godzinowa'>Pogoda na najbliższe 48 godzin </p>";
     echo "<table class='table table-weather'><thead><tr>";
     echo "<th>Data i godzina</th><th>Temperatura / Odczuwalna</th><th>Opady/ Zachmurzenie</th><th>Wiatr / Ciśnienie</th></tr></thead><tbody>";
-
         for ($i = 1; $i <= 48; $i++) {
         echo "<tr><td>";
         echo date('d-m H:i', $obj->hourly->data[$i]->time)."</th><td>";
         echo floatval($obj->hourly->data[$i]->temperature)."&deg;C / ";
         echo floatval($obj->hourly->data[$i]->apparentTemperature)."&deg;C</td>";
-        echo "<td>".($obj->hourly->data[$i]->precipIntensity*100)." / ".($obj->hourly->data[$i]->cloudCover*100)."%"."</td>";
+        echo "<td>".floatval($obj->hourly->data[$i]->precipIntensity*100)." mm/godz / ".($obj->hourly->data[$i]->cloudCover*100)."%"."</td>";
         echo "<td>".$obj->hourly->data[$i]->windSpeed."m/s"." / ".$obj->hourly->data[$i]->pressure."hPa"."</td>";
         echo "<td>"?>
         <canvas id="<?php echo "icon".$i?>" width="64" height="64"></canvas>
         <script>
             skycons.add("<?php echo "icon".$i?>","<?php echo $obj->hourly->data[$i]->icon;?>");
         </script>
+
 <?php
         }
     echo "</tbody></table> <br>";
@@ -141,7 +149,7 @@
         echo date('d-m', $obj->daily->data[$i]->time)."</th><td>";
         echo floatval($obj->daily->data[$i]->temperatureMin)."&deg;C / ";
         echo floatval($obj->daily->data[$i]->temperatureMax)."&deg;C</td>";
-        echo "<td>".($obj->daily->data[$i]->precipIntensityMax*100)." / ".($obj->daily->data[$i]->cloudCover*100)."%"."</td>";
+        echo "<td>".floatval($obj->daily->data[$i]->precipIntensityMax*100)." mm/godz / ".($obj->daily->data[$i]->cloudCover*100)."%"."</td>";
         echo "<td>".$obj->daily->data[$i]->windSpeed."m/s"." / ".$obj->daily->data[$i]->pressure."hPa"."</td>";
         echo "<td>"?>
         <canvas id="<?php echo "icon_daily".$i?>" width="64" height="64"></canvas>
