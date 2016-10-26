@@ -51,6 +51,15 @@
                         var yzx=1;
                         var i;
                         var td= document.getElementsByTagName("td");
+                        function zmianaCzasu(time){
+                            var date = new Date(time*1000);
+                            var day= date.getDate();
+                            var month
+                            var hours= date.getHours();
+                            var minutes = "0"+date.getMinutes();
+                            var fT = hours+ ' :'+minutes.substr(-2);
+                            return fT;
+                        }
                         for (i=0;i<48*5;i+=5,y++){
                             var date = new Date(godz[y]['time']*1000);
                             var day = date.getDate();
@@ -61,30 +70,34 @@
                             else{
                                 month=date.getMonth()+1;
                             }
-                            var hours = date.getHours()+timeZone-Math.abs(currentTimeZone);
-                            if(hours>24){
+                            var hours = Math.round(date.getHours()+timeZone-1);
+                            if(hours>23){
                                 hours=hours-24;
                                 day++;
                             }
+                                if(hours<0){
+                                    hours=hours+24;
+                                    day++;
+                                }
                             var formattedTime = day+'-'+ month+ ' '+hours + ':00';
                             document.getElementById(td[i].innerHTML=formattedTime);
                             document.getElementById(td[i+1].innerHTML=godz[y]['temperature']+'℃'+' / '+godz[y]['apparentTemperature']+'℃');
                             document.getElementById(td[i+2].innerHTML=Math.round(godz[y]['humidity']*100)+' %' + ' / '+Math.round(godz[y]['precipProbability']*100) +'%');
                             document.getElementById(td[i+3].innerHTML=godz[y]['windSpeed']+'m/s'+' / '+godz[y]['pressure']+'hPa');
                             var iconNumber="icon"+yzx;
-//                            var iconString='<'+"canvas id="+"'"+iconNumber+"'"+"width="+'"64"'+"height="+'"64"'+'></canvas>';
                             skycons.set(iconNumber,godz[yzx]['icon']);
                             yzx++;
 
                         }
                         y=0;
                         yzx=0;
-                        for(i=48*3;i<48*3+7*3;i+=3,y++){
-                            document.getElementById(time[i].innerHTML=dzien[y]['time']);
-                            document.getElementById(td[i].innerHTML=dzien[y]['temperatureMin']+'℃'+' / '+ dzien[y]['temperatureMax']+'℃');
-                            document.getElementById(td[i+1].innerHTML=Math.round(dzien[y]['humidity']*100)+' %'+ ' / '+ Math.round(dzien[y]['precipProbability']*100) + '%');
-                            document.getElementById(td[i+2].innerHTML=dzien[y]['windSpeed']+'m/s'+' / '+ dzien[y]['pressure']+'hPa');
-                            var iconNumber="icon"+yzx;
+                        for(i=240;i<290;i+=5,y++){
+                            document.getElementById(td[i].innerHTML=dzien[y]['summary']+"<br> Wschód: "+zmianaCzasu(dzien[y]['sunriseTime'])+" <br>"+"Zachód: "+zmianaCzasu(dzien[y]['sunsetTime'])+
+                            " <br>"+zmianaCzasu(dzien[y]['time']));
+                            document.getElementById(td[i+1].innerHTML=dzien[y]['temperatureMin']+'℃'+' / '+ dzien[y]['temperatureMax']+'℃');
+                            document.getElementById(td[i+2].innerHTML=Math.round(dzien[y]['humidity']*100)+' %'+ ' / '+ Math.round(dzien[y]['precipProbability']*100) + '%');
+                            document.getElementById(td[i+3].innerHTML=dzien[y]['windSpeed']+'m/s'+' / '+dzien[y]['pressure']+'hPa');
+                            iconNumber="icon"+yzx;
                             skycons.set(iconNumber,dzien[yzx]['icon']);
                             yzx++;
                         }
@@ -141,14 +154,14 @@
     echo "<p id='tygodniowa'>Pogoda na najbliższe 7 dni </p>";
     echo "<table class='table table-weather'> <thead><tr>";
     echo "<th>Data i godzina</th><th>Min Temp / Max Temp</th><th>Maksymalne Opady / Zachmurzenie</th><th>Wiatr / Ciśnienie</th></tr></thead><tbody>";
-    for ($i = 1; $i <= 7; $i++) {
-        echo "<tr><th scope='row'>";
+    for ($i = 0; $i <= 7; $i++) {
+        echo "<tr><td scope='row'>";
         echo $obj->daily->data[$i]->summary;
         echo "<div id='sunrise'>Wschód ".date('H:i',$obj->daily->data[$i]->sunriseTime)."<br></div>";
         echo "<div id='sunset'>Zachód ".date('H:i',$obj->daily->data[$i]->sunsetTime)."<br></div>";
         echo date('d-m', $obj->daily->data[$i]->time)."</th><td>";
         echo floatval($obj->daily->data[$i]->temperatureMin)."&deg;C / ";
-        echo floatval($obj->daily->data[$i]->temperatureMax)."&deg;C</td>";
+        echo ($obj->daily->data[$i]->temperatureMax)."&deg;C</td>";
         echo "<td>".floatval($obj->daily->data[$i]->precipIntensityMax*100)." mm/godz / ".($obj->daily->data[$i]->cloudCover*100)."%"."</td>";
         echo "<td>".$obj->daily->data[$i]->windSpeed."m/s"." / ".$obj->daily->data[$i]->pressure."hPa"."</td>";
         echo "<td>"?>
