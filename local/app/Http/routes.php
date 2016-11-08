@@ -14,6 +14,7 @@ Route::get('/', function () {
 Route::get('/contact', function () {
     return view('contact.contact');
 });
+Route::get('/forecast/london','ForecastController@london');
 Route::get('/about', 'PagesController@about');
 Route::get('/articles/lista','ArticlesController@lista');
 

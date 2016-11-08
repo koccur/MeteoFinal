@@ -4734,7 +4734,9 @@ ul.pagination {
       margin-left: 0;
       text-transform: uppercase;
       padding: 10px;
-      background-color: #27ae60;
+      padding-top:6px;
+      padding-bottom:0px;
+      background-color: #2ecc71;
       float: left; }
       #row-sign ul li:first-of-type {
         margin-left: 10px; }
@@ -4835,13 +4837,10 @@ ul.pagination {
           border-right: 0; } }
       .weather-info .actual-weather-bar .contents .cols h5 {
         text-align: center; }
-    .weather-info .actual-weather-bar .contents #wind {
-      border-bottom: 0px; }
+
       @media screen and (max-width: 990px) {
         .weather-info .actual-weather-bar .contents #wind {
           border-bottom: 10px solid #2ecc71; } }
-    .weather-info .actual-weather-bar .contents #cloud {
-      border-right: 0; }
     .weather-info .actual-weather-bar .contents #weather-later {
       background-color: transparent;
       padding: 0; }
@@ -5098,7 +5097,52 @@ footer {
 
 .table-weather {
   color: black;
-  background-color: #D1DBBD;
-  border-radius: 10px; }
+  background-color: #D1DBBD;}
 
-/*# sourceMappingURL=style.css.map */
+.registerSigns{
+  color:#2ecc71
+}
+
+#daily1info{
+  display:block;
+  background-color: red;
+  width:100%;
+}
+#dailySummary{
+  background-color: #00A6C7;
+  width:25%;
+  display:inline-block;
+}
+#dailyHumidity{
+  background-color: greenyellow;
+  width: 25%;
+  display:inline-block;
+}
+#dailyPrecip{
+  background-color: #000b14;
+  width:25%;
+  display:inline-block;
+}
+#dailyCloud{
+  background-color: #9B703F;
+  width:25%;
+  display:inline-block;
+}
+
+.table td{
+  vertical-align: middle;
+  line-height: 14px;
+  padding:2px;
+  padding-left:10px;
+}
+
+table table th .tableInfo {
+  padding: 0.75rem;
+}
+
+tbody tr td{
+  background-color: #a0a6ad;
+}
+tbody tr:nth-child(odd) td{
+  background-color: rgba(62, 59, 63, 0.53);
+}

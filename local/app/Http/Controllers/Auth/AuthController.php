@@ -46,7 +46,7 @@ class AuthController extends Controller
      * @return void
      */
     protected function getFailedLoginMessage(){//zle zalogowanie
-        return 'nie bangla';
+        return 'Problem z zalogowaniem spróbuj ponownie.';
     }
 
 

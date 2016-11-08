@@ -6,24 +6,22 @@
 	<header class="main-header">
 		<div class="header-content">
 			@include('layouts.header')
-
 			@include('layouts.navbar')
 		</div>
 	</header>
-
 	<section class="weather-info">
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-sm-12 actual-weather-bar">
 					<div class="contents">
 					@include('layouts.weather')
+            			<a class="cols col-xs-12 col-md-6" href="{{URL::to('/forecast#godzinowa')}}">
+							<button type="button" style="width:100%;" class="btn btn-success">Pogoda Godzinowa</button></a>
+            			<a class="cols col-xs-12 col-md-6" href="{{URL::to('/forecast#tygodniowa')}}">
+							<button type="button" style="width:100%;" class="btn btn-success">Pogoda Tygodniowa</button></a>
 
-					<div id="weather-later" class=" col-md-12 col-lg-10">
-            			<a href="{{URL::to('/forecast#godzinowa')}}"><button type="button" id="hourly" class="btn btn-success">Pogoda Godzinowa</button></a>
-            			<a href="{{URL::to('/forecast#tygodniowa')}}"><button type="button" class="btn btn-success">Pogoda Tygodniowa</button></a>
-            			<div class="clearfix"></div>
-            		</div>
-            		<div class="clearfix"></div>
+							<div class="clearfix"></div>
+
 
 					</div>
 				</div>

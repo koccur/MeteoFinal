@@ -12,8 +12,11 @@
             <input type="username" class="form-control" name="username" value=>
             @if ($errors->has('username'))
                 <span class="help-block">
+                    <div style="color:red">
                     <strong>{{ $errors->first('username') }}</strong>
+                </div>
                 </span>
+
             @endif
         </div>
 
@@ -23,7 +26,9 @@
 
             @if ($errors->has('password'))
                 <span class="help-block">
+                    <div style="color:red">
                     <strong>{{ $errors->first('password') }}</strong>
+                        </div>
                 </span>
             @endif
         </div>

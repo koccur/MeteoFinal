@@ -27,12 +27,15 @@
 			<li><a href="{{URL::to('/about')}}">O nas</a></li>
 {{--            <li><a href="{{URL::to('/images')}}">Rysunki</a></li>--}}
             <li><a href="{{URL::to('/forecast')}}">Pogoda</a></li>
+
             @if (Auth::guest())
+                <li style="float:right"><a href="{{URL::to('/login')}}">Zaloguj</a></li>
             @else
-			<li class="pull-xs-right">
-                <button class="navbar-toggler bb" type="button" data-target="#exCollapsingNavbar2">
-                    <i class="fa fa-user"></i></button>
-            </li>
+                    <li style="float:right">
+                 <a href="{{URL::to('/users',Auth::user()->id)}}">Witaj {{Auth::user()->username}}!</a>
+
+                    </li>
+
             @endif
 		</span>
     </ul>
