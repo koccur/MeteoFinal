@@ -1,0 +1,9 @@
+INSERT INTO meteo.migrations (migration, batch) VALUES ('2014_10_12_000000_create_users_table', 1);
+INSERT INTO meteo.migrations (migration, batch) VALUES ('2014_10_12_100000_create_password_resets_table', 1);
+INSERT INTO meteo.migrations (migration, batch) VALUES ('2016_02_26_151515_create_articles_table', 1);
+INSERT INTO meteo.migrations (migration, batch) VALUES ('2016_03_14_201548_create_comments_table', 1);
+INSERT INTO meteo.migrations (migration, batch) VALUES ('2016_03_14_201619_create_categories_table', 1);
+INSERT INTO meteo.migrations (migration, batch) VALUES ('2016_03_14_201630_create_tags_tables', 1);
+INSERT INTO meteo.migrations (migration, batch) VALUES ('2016_03_14_201641_create_taggins_table', 1);
+INSERT INTO meteo.migrations (migration, batch) VALUES ('2016_04_03_092322_entrust_setup_tables', 1);
+INSERT INTO meteo.migrations (migration, batch) VALUES ('2016_04_12_092322_create_images_table', 1);

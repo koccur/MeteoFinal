@@ -1,0 +1,1 @@
+INSERT INTO meteo.password_resets (email, token, created_at) VALUES ('admin@admin.do', '42a1dfc6146a2ef9a5d1b75755155e6107093aae99b18c7beb088c95164317c2', '2016-11-01 12:56:23');
