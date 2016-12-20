@@ -33,12 +33,13 @@ Route::group(['middleware' => ['web']], function () {
     Route::resource('', 'PagesController');
     Route::resource('images','ImageController');
     Route::resource('forecast','ForecastController');
+
 });
+
 //Route::get('user/{id}','UsersController@show')->where('id','[0-9]+');
 Route::group(['middleware' => 'web'], function () {
     Route::auth();
-    Route::get('auth/logout', 'Auth\AuthController@getLogout');
-//    Route::get('/reset/password','Auth\PasswordController');
+    Route::get('auth/logout', 'Auth\AuthController@logout');
     Route::get('/home', 'HomeController@index');
 });
 ///////////////////////////////

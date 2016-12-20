@@ -79,25 +79,6 @@ class Collection implements
     }
 
     /**
-     * Add a value to a key.  If a key of the same name has already been added,
-     * the key value will be converted into an array and the new value will be
-     * pushed to the end of the array.
-     *
-     * @param string $key   Key to add
-     * @param mixed  $value Value to add to the key
-     */
-    public function add($key, $value)
-    {
-        if (!array_key_exists($key, $this->data)) {
-            $this->data[$key] = $value;
-        } elseif (is_array($this->data[$key])) {
-            $this->data[$key][] = $value;
-        } else {
-            $this->data[$key] = array($this->data[$key], $value);
-        }
-    }
-
-    /**
      * Remove a specific key value pair
      *
      * @param string $key A key to remove
@@ -161,6 +142,25 @@ class Collection implements
     {
         foreach ($data as $key => $value) {
             $this->add($key, $value);
+        }
+    }
+
+    /**
+     * Add a value to a key.  If a key of the same name has already been added,
+     * the key value will be converted into an array and the new value will be
+     * pushed to the end of the array.
+     *
+     * @param string $key Key to add
+     * @param mixed $value Value to add to the key
+     */
+    public function add($key, $value)
+    {
+        if (!array_key_exists($key, $this->data)) {
+            $this->data[$key] = $value;
+        } elseif (is_array($this->data[$key])) {
+            $this->data[$key][] = $value;
+        } else {
+            $this->data[$key] = array($this->data[$key], $value);
         }
     }
 

@@ -55,58 +55,122 @@ class Uri implements UriInterface
         }
     }
 
-    public function __toString()
+    /**
+     * Apply parse_url parts to a URI.
+     *
+     * @param $parts Array of parse_url parts to apply.
+     */
+    private function applyParts(array $parts)
     {
-        return self::createUriString(
-            $this->scheme,
-            $this->getAuthority(),
-            $this->getPath(),
-            $this->query,
-            $this->fragment
+        $this->scheme = isset($parts['scheme'])
+            ? $this->filterScheme($parts['scheme'])
+            : '';
+        $this->userInfo = isset($parts['user']) ? $parts['user'] : '';
+        $this->host = isset($parts['host']) ? $parts['host'] : '';
+        $this->port = !empty($parts['port'])
+            ? $this->filterPort($this->scheme, $this->host, $parts['port'])
+            : null;
+        $this->path = isset($parts['path'])
+            ? $this->filterPath($parts['path'])
+            : '';
+        $this->query = isset($parts['query'])
+            ? $this->filterQueryAndFragment($parts['query'])
+            : '';
+        $this->fragment = isset($parts['fragment'])
+            ? $this->filterQueryAndFragment($parts['fragment'])
+            : '';
+        if (isset($parts['pass'])) {
+            $this->userInfo .= ':' . $parts['pass'];
+        }
+    }
+
+    /**
+     * @param string $scheme
+     *
+     * @return string
+     */
+    private function filterScheme($scheme)
+    {
+        $scheme = strtolower($scheme);
+        $scheme = rtrim($scheme, ':/');
+
+        return $scheme;
+    }
+
+    /**
+     * @param string $scheme
+     * @param string $host
+     * @param int $port
+     *
+     * @return int|null
+     *
+     * @throws \InvalidArgumentException If the port is invalid.
+     */
+    private function filterPort($scheme, $host, $port)
+    {
+        if (null !== $port) {
+            $port = (int) $port;
+            if (1 > $port || 0xffff < $port) {
+                throw new \InvalidArgumentException(
+                    sprintf('Invalid port: %d. Must be between 1 and 65535', $port)
+                );
+            }
+        }
+
+        return $this->isNonStandardPort($scheme, $host, $port) ? $port : null;
+    }
+
+    /**
+     * Is a given port non-standard for the current scheme?
+     *
+     * @param string $scheme
+     * @param string $host
+     * @param int $port
+     * @return bool
+     */
+    private static function isNonStandardPort($scheme, $host, $port)
+    {
+        if (!$scheme && $port) {
+            return true;
+        }
+
+        if (!$host || !$port) {
+            return false;
+        }
+
+        return !isset(self::$schemes[$scheme]) || $port !== self::$schemes[$scheme];
+    }
+
+    /**
+     * Filters the path of a URI
+     *
+     * @param $path
+     *
+     * @return string
+     */
+    private function filterPath($path)
+    {
+        return preg_replace_callback(
+            '/(?:[^' . self::$charUnreserved . self::$charSubDelims . ':@\/%]+|%(?![A-Fa-f0-9]{2}))/',
+            [$this, 'rawurlencodeMatchZero'],
+            $path
         );
     }
 
     /**
-     * Removes dot segments from a path and returns the new path.
+     * Filters the query string or fragment of a URI.
      *
-     * @param string $path
+     * @param $str
      *
      * @return string
-     * @link http://tools.ietf.org/html/rfc3986#section-5.2.4
      */
-    public static function removeDotSegments($path)
+    private function filterQueryAndFragment($str)
     {
-        static $noopPaths = ['' => true, '/' => true, '*' => true];
-        static $ignoreSegments = ['.' => true, '..' => true];
-
-        if (isset($noopPaths[$path])) {
-            return $path;
-        }
-
-        $results = [];
-        $segments = explode('/', $path);
-        foreach ($segments as $segment) {
-            if ($segment == '..') {
-                array_pop($results);
-            } elseif (!isset($ignoreSegments[$segment])) {
-                $results[] = $segment;
-            }
-        }
-
-        $newPath = implode('/', $results);
-        // Add the leading slash if necessary
-        if (substr($path, 0, 1) === '/' &&
-            substr($newPath, 0, 1) !== '/'
-        ) {
-            $newPath = '/' . $newPath;
-        }
-
-        // Add the trailing slash if necessary
-        if ($newPath != '/' && isset($ignoreSegments[end($segments)])) {
-            $newPath .= '/';
-        }
-
-        return $newPath;
+        return preg_replace_callback(
+            '/(?:[^' . self::$charUnreserved . self::$charSubDelims . '%:@\/\?]+|%(?![A-Fa-f0-9]{2}))/',
+            [$this, 'rawurlencodeMatchZero'],
+            $str
+        );
     }
 
     /**
@@ -181,6 +245,49 @@ class Uri implements UriInterface
             $parts['query'],
             $parts['fragment']
         ));
+    }
+
+    /**
+     * Removes dot segments from a path and returns the new path.
+     *
+     * @param string $path
+     *
+     * @return string
+     * @link http://tools.ietf.org/html/rfc3986#section-5.2.4
+     */
+    public static function removeDotSegments($path)
+    {
+        static $noopPaths = ['' => true, '/' => true, '*' => true];
+        static $ignoreSegments = ['.' => true, '..' => true];
+
+        if (isset($noopPaths[$path])) {
+            return $path;
+        }
+
+        $results = [];
+        $segments = explode('/', $path);
+        foreach ($segments as $segment) {
+            if ($segment == '..') {
+                array_pop($results);
+            } elseif (!isset($ignoreSegments[$segment])) {
+                $results[] = $segment;
+            }
+        }
+
+        $newPath = implode('/', $results);
+        // Add the leading slash if necessary
+        if (substr($path, 0, 1) === '/' &&
+            substr($newPath, 0, 1) !== '/'
+        ) {
+            $newPath = '/' . $newPath;
+        }
+
+        // Add the trailing slash if necessary
+        if ($newPath != '/' && isset($ignoreSegments[end($segments)])) {
+            $newPath .= '/';
+        }
+
+        return $newPath;
     }
 
     /**
@@ -266,9 +373,63 @@ class Uri implements UriInterface
         return $uri;
     }
 
-    public function getScheme()
+    public function __toString()
     {
-        return $this->scheme;
+        return self::createUriString(
+            $this->scheme,
+            $this->getAuthority(),
+            $this->getPath(),
+            $this->query,
+            $this->fragment
+        );
+    }
+
+    /**
+     * Create a URI string from its various parts
+     *
+     * @param string $scheme
+     * @param string $authority
+     * @param string $path
+     * @param string $query
+     * @param string $fragment
+     * @return string
+     */
+    private static function createUriString($scheme, $authority, $path, $query, $fragment)
+    {
+        $uri = '';
+
+        if (!empty($scheme)) {
+            $uri .= $scheme . ':';
+        }
+
+        $hierPart = '';
+
+        if (!empty($authority)) {
+            if (!empty($scheme)) {
+                $hierPart .= '//';
+            }
+            $hierPart .= $authority;
+        }
+
+        if ($path != null) {
+            // Add a leading slash if necessary.
+            if ($hierPart && substr($path, 0, 1) !== '/') {
+                $hierPart .= '/';
+            }
+            $hierPart .= $path;
+        }
+
+        $uri .= $hierPart;
+
+        if ($query != null) {
+            $uri .= '?' . $query;
+        }
+
+        if ($fragment != null) {
+            $uri .= '#' . $fragment;
+        }
+
+        return $uri;
     }
 
     public function getAuthority()
@@ -289,6 +450,16 @@ class Uri implements UriInterface
         return $authority;
     }
 
+    public function getPath()
+    {
+        return $this->path == null ? '' : $this->path;
+    }
+
+    public function getScheme()
+    {
+        return $this->scheme;
+    }
+
     public function getUserInfo()
     {
         return $this->userInfo;
@@ -302,11 +473,6 @@ class Uri implements UriInterface
     public function getPort()
     {
         return $this->port;
-    }
-
-    public function getPath()
-    {
-        return $this->path == null ? '' : $this->path;
     }
 
     public function getQuery()
@@ -431,172 +597,6 @@ class Uri implements UriInterface
         $new = clone $this;
         $new->fragment = $fragment;
         return $new;
-    }
-
-    /**
-     * Apply parse_url parts to a URI.
-     *
-     * @param $parts Array of parse_url parts to apply.
-     */
-    private function applyParts(array $parts)
-    {
-        $this->scheme = isset($parts['scheme'])
-            ? $this->filterScheme($parts['scheme'])
-            : '';
-        $this->userInfo = isset($parts['user']) ? $parts['user'] : '';
-        $this->host = isset($parts['host']) ? $parts['host'] : '';
-        $this->port = !empty($parts['port'])
-            ? $this->filterPort($this->scheme, $this->host, $parts['port'])
-            : null;
-        $this->path = isset($parts['path'])
-            ? $this->filterPath($parts['path'])
-            : '';
-        $this->query = isset($parts['query'])
-            ? $this->filterQueryAndFragment($parts['query'])
-            : '';
-        $this->fragment = isset($parts['fragment'])
-            ? $this->filterQueryAndFragment($parts['fragment'])
-            : '';
-        if (isset($parts['pass'])) {
-            $this->userInfo .= ':' . $parts['pass'];
-        }
-    }
-
-    /**
-     * Create a URI string from its various parts
-     *
-     * @param string $scheme
-     * @param string $authority
-     * @param string $path
-     * @param string $query
-     * @param string $fragment
-     * @return string
-     */
-    private static function createUriString($scheme, $authority, $path, $query, $fragment)
-    {
-        $uri = '';
-
-        if (!empty($scheme)) {
-            $uri .= $scheme . ':';
-        }
-
-        $hierPart = '';
-
-        if (!empty($authority)) {
-            if (!empty($scheme)) {
-                $hierPart .= '//';
-            }
-            $hierPart .= $authority;
-        }
-
-        if ($path != null) {
-            // Add a leading slash if necessary.
-            if ($hierPart && substr($path, 0, 1) !== '/') {
-                $hierPart .= '/';
-            }
-            $hierPart .= $path;
-        }
-
-        $uri .= $hierPart;
-
-        if ($query != null) {
-            $uri .= '?' . $query;
-        }
-
-        if ($fragment != null) {
-            $uri .= '#' . $fragment;
-        }
-
-        return $uri;
-    }
-
-    /**
-     * Is a given port non-standard for the current scheme?
-     *
-     * @param string $scheme
-     * @param string $host
-     * @param int $port
-     * @return bool
-     */
-    private static function isNonStandardPort($scheme, $host, $port)
-    {
-        if (!$scheme && $port) {
-            return true;
-        }
-
-        if (!$host || !$port) {
-            return false;
-        }
-
-        return !isset(self::$schemes[$scheme]) || $port !== self::$schemes[$scheme];
-    }
-
-    /**
-     * @param string $scheme
-     *
-     * @return string
-     */
-    private function filterScheme($scheme)
-    {
-        $scheme = strtolower($scheme);
-        $scheme = rtrim($scheme, ':/');
-
-        return $scheme;
-    }
-
-    /**
-     * @param string $scheme
-     * @param string $host
-     * @param int $port
-     *
-     * @return int|null
-     *
-     * @throws \InvalidArgumentException If the port is invalid.
-     */
-    private function filterPort($scheme, $host, $port)
-    {
-        if (null !== $port) {
-            $port = (int) $port;
-            if (1 > $port || 0xffff < $port) {
-                throw new \InvalidArgumentException(
-                    sprintf('Invalid port: %d. Must be between 1 and 65535', $port)
-                );
-            }
-        }
-
-        return $this->isNonStandardPort($scheme, $host, $port) ? $port : null;
-    }
-
-    /**
-     * Filters the path of a URI
-     *
-     * @param $path
-     *
-     * @return string
-     */
-    private function filterPath($path)
-    {
-        return preg_replace_callback(
-            '/(?:[^' . self::$charUnreserved . self::$charSubDelims . ':@\/%]+|%(?![A-Fa-f0-9]{2}))/',
-            [$this, 'rawurlencodeMatchZero'],
-            $path
-        );
-    }
-
-    /**
-     * Filters the query string or fragment of a URI.
-     *
-     * @param $str
-     *
-     * @return string
-     */
-    private function filterQueryAndFragment($str)
-    {
-        return preg_replace_callback(
-            '/(?:[^' . self::$charUnreserved . self::$charSubDelims . '%:@\/\?]+|%(?![A-Fa-f0-9]{2}))/',
-            [$this, 'rawurlencodeMatchZero'],
-            $str
-        );
     }
 
     private function rawurlencodeMatchZero(array $match)

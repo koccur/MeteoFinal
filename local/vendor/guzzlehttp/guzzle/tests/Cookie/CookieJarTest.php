@@ -20,15 +20,6 @@ class CookieJarTest extends \PHPUnit_Framework_TestCase
         $this->jar = new CookieJar();
     }
 
-    protected function getTestCookies()
-    {
-        return [
-            new SetCookie(['Name' => 'foo',  'Value' => 'bar', 'Domain' => 'foo.com', 'Path' => '/',    'Discard' => true]),
-            new SetCookie(['Name' => 'test', 'Value' => '123', 'Domain' => 'baz.com', 'Path' => '/foo', 'Expires' => 2]),
-            new SetCookie(['Name' => 'you',  'Value' => '123', 'Domain' => 'bar.com', 'Path' => '/boo', 'Expires' => time() + 1000])
-        ];
-    }
-
     public function testQuotesBadCookieValues()
     {
         $this->assertEquals('foo', CookieJar::getCookieValue('foo'));
@@ -73,6 +64,15 @@ class CookieJarTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(3, count($this->jar));
         $this->assertEquals(3, count($this->jar->getIterator()));
         $this->assertEquals($cookies, $this->jar->getIterator()->getArrayCopy());
+    }
+
+    protected function getTestCookies()
+    {
+        return [
+            new SetCookie(['Name' => 'foo',  'Value' => 'bar', 'Domain' => 'foo.com', 'Path' => '/',    'Discard' => true]),
+            new SetCookie(['Name' => 'test', 'Value' => '123', 'Domain' => 'baz.com', 'Path' => '/foo', 'Expires' => 2]),
+            new SetCookie(['Name' => 'you',  'Value' => '123', 'Domain' => 'bar.com', 'Path' => '/boo', 'Expires' => time() + 1000])
+        ];
     }
 
     public function testRemovesTemporaryCookies()

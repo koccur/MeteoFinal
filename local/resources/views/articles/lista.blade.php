@@ -1,5 +1,5 @@
 
-<div style="display:none">{{  $articles=App\Article::latest('published_at')->published()->paginate(4)}}</div>
+<div style="display:none">{{  $articles=App\Article::latest('published_at')->published()->paginate(6)}}</div>
 @foreach($articles as $article)
 	<article>
 	    <a href="{{action('ArticlesController@show',$article->id)}}">

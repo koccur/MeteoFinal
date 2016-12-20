@@ -56,103 +56,6 @@ class Request extends AbstractMessage implements RequestInterface
         }
     }
 
-    public function __clone()
-    {
-        if ($this->emitter) {
-            $this->emitter = clone $this->emitter;
-        }
-        $this->transferOptions = clone $this->transferOptions;
-        $this->url = clone $this->url;
-    }
-
-    public function setUrl($url)
-    {
-        $this->url = $url instanceof Url ? $url : Url::fromString($url);
-        $this->updateHostHeaderFromUrl();
-    }
-
-    public function getUrl()
-    {
-        return (string) $this->url;
-    }
-
-    public function setQuery($query)
-    {
-        $this->url->setQuery($query);
-    }
-
-    public function getQuery()
-    {
-        return $this->url->getQuery();
-    }
-
-    public function setMethod($method)
-    {
-        $this->method = strtoupper($method);
-    }
-
-    public function getMethod()
-    {
-        return $this->method;
-    }
-
-    public function getScheme()
-    {
-        return $this->url->getScheme();
-    }
-
-    public function setScheme($scheme)
-    {
-        $this->url->setScheme($scheme);
-    }
-
-    public function getPort()
-    {
-        return $this->url->getPort();
-    }
-
-    public function setPort($port)
-    {
-        $this->url->setPort($port);
-        $this->updateHostHeaderFromUrl();
-    }
-
-    public function getHost()
-    {
-        return $this->url->getHost();
-    }
-
-    public function setHost($host)
-    {
-        $this->url->setHost($host);
-        $this->updateHostHeaderFromUrl();
-    }
-
-    public function getPath()
-    {
-        return '/' . ltrim($this->url->getPath(), '/');
-    }
-
-    public function setPath($path)
-    {
-        $this->url->setPath($path);
-    }
-
-    public function getResource()
-    {
-        $resource = $this->getPath();
-        if ($query = (string) $this->url->getQuery()) {
-            $resource .= '?' . $query;
-        }
-
-        return $resource;
-    }
-
-    public function getConfig()
-    {
-        return $this->transferOptions;
-    }
-
     protected function handleOptions(array &$options)
     {
         parent::handleOptions($options);
@@ -178,6 +81,67 @@ class Request extends AbstractMessage implements RequestInterface
         $this->getEmitter()->attach($subscriber);
     }
 
+    public function __clone()
+    {
+        if ($this->emitter) {
+            $this->emitter = clone $this->emitter;
+        }
+        $this->transferOptions = clone $this->transferOptions;
+        $this->url = clone $this->url;
+    }
+
+    public function getUrl()
+    {
+        return (string)$this->url;
+    }
+
+    public function setUrl($url)
+    {
+        $this->url = $url instanceof Url ? $url : Url::fromString($url);
+        $this->updateHostHeaderFromUrl();
+    }
+
+    public function setQuery($query)
+    {
+        $this->url->setQuery($query);
+    }
+
+    public function getQuery()
+    {
+        return $this->url->getQuery();
+    }
+
+    public function getMethod()
+    {
+        return $this->method;
+    }
+
+    public function setMethod($method)
+    {
+        $this->method = strtoupper($method);
+    }
+
+    public function getScheme()
+    {
+        return $this->url->getScheme();
+    }
+
+    public function setScheme($scheme)
+    {
+        $this->url->setScheme($scheme);
+    }
+
+    public function getPort()
+    {
+        return $this->url->getPort();
+    }
+
+    public function setPort($port)
+    {
+        $this->url->setPort($port);
+        $this->updateHostHeaderFromUrl();
+    }
+
     private function updateHostHeaderFromUrl()
     {
         $port = $this->url->getPort();
@@ -191,5 +155,41 @@ class Request extends AbstractMessage implements RequestInterface
                 $this->setHeader('Host', "{$host}:{$port}");
             }
         }
+    }
+
+    public function getHost()
+    {
+        return $this->url->getHost();
+    }
+
+    public function setHost($host)
+    {
+        $this->url->setHost($host);
+        $this->updateHostHeaderFromUrl();
+    }
+
+    public function setPath($path)
+    {
+        $this->url->setPath($path);
+    }
+
+    public function getResource()
+    {
+        $resource = $this->getPath();
+        if ($query = (string) $this->url->getQuery()) {
+            $resource .= '?' . $query;
+        }
+
+        return $resource;
+    }
+
+    public function getPath()
+    {
+        return '/' . ltrim($this->url->getPath(), '/');
+    }
+
+    public function getConfig()
+    {
+        return $this->transferOptions;
     }
 }

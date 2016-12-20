@@ -33,7 +33,7 @@
                         var tempFeel = parsed_json['currently']['apparentTemperature'];
                         var pressure = parsed_json['currently']['pressure'];
                         var rain = parsed_json['currently']['precipProbability'];
-                        var rainInt = parsed_json['currently']['precipIntensity'];
+//                        var rainInt = parsed_json['currently']['precipIntensity'];
                         var humidity =parsed_json['currently']['humidity'];
                         var cloud = parsed_json['currently']['cloudCover'];
                         var wind = parsed_json['currently']['windSpeed'];
@@ -41,18 +41,18 @@
                         var dzien=parsed_json['daily']['data'];
                         $('#lat').html(lat);
                         $('#godz').html(godz);
-                        $('#opis').html(summary);
+                        $('#opis').html("<div id='opis'>" + summary + "<div id='temp'><h4><br>" + temp + "º C</h4></div></div>");
                         $('#lon').html(lon);
-                        $('#city').html(city);
+                        $('#city').html("<h2>" + city + "</h2>");
                         $('#timeZone').html(timeZone);
-                        $('#temp').html("Aktualna</br>"+"<h5>"+ temp + " <sup>º C</sup>"+"</h5>");
-                        $('#tempFeel').html("Odczuwalna</br>"+"<h5>"+tempFeel+ " <sup>º C</sup>"+"</h5>");
+//                        $('#temp').html("temp" + " <sup>º C</sup>"+"</h5>");
+                        $('#tempFeel').html("Odczuwalna</br>" + "<h5>" + tempFeel + "º C</h5>");
                         $('#pressure').html("Ciśnienie</br>"+"<h5>"+ pressure+ "hPa</h5>");
-                        $('#rain').html("Szansa na opady</br><h5>"+Math.round(rain*100)+"%</h5>");
-                        $('#rainInt').html("Intenstywność opadów</br><h5>"+Math.round(rainInt*100)+"mm/h</h5>");
+                        $('#rain').html("Opady</br><h5>" + Math.round(rain * 100) + "%</h5>");
+//                        $('#rainInt').html("Opady</br><h55>"+Math.round(rainInt*100)+"mm/h</h55>");
                         $('#humidity').html("Wilgotność</br><h5>"+Math.round(humidity*100)+"%</h5>");
                         $('#cloud').html("Zachmurzenie</br><h5>"+Math.round(cloud*100)+"%</h5>");
-                        $('#wind').html("Wiatr</br><h5>"+ wind+"m/s</h5>");
+                        $('#wind').html("Wiatr</br><h5>" + wind + " m/s</h5>");
                         var y=0;
                         var yzx=1;
                         var i;
@@ -150,9 +150,16 @@
                 <input type="hidden" id="cityLat" name="cityLat" />
                 <input type="hidden" id="cityLng" name="cityLng" />
         </ul>
-<?php
-        $details = json_decode(file_get_contents("http://ipinfo.io/json"));
-        $ip=$details->loc;
+
+        <?php
+
+        $ip = $_SERVER['REMOTE_ADDR'];
+        //        $details = json_decode(file_get_contents("http://ipinfo.io/{$ip}/json"));
+        //        if($details->loc != '::1'){
+        //        $ip=$details->loc;}
+        //            else{
+        $ip = '51.0115,19.769';
+        //            }
         $json=file_get_contents("https://api.forecast.io/forecast/22d2bd3c5dab42a265e7c10415f821e3/{$ip}?lang=pl&units=si");
         $obj=json_decode($json);
         date_default_timezone_set($obj->timezone);
@@ -160,7 +167,7 @@
     echo "<table class='table table-weather'><thead><tr>";
     echo "<th class='tableInfo'>Data i godzina</th><th class='tableInfo'>Temperatura / Odczuwalna</th><th class='tableInfo'>Opady/ Zachmurzenie</th><th class='tableInfo'>Wiatr / Ciśnienie</th></tr></thead><tbody>";
         for ($i = 1; $i <= 48; $i++) {
-        echo "<tr><td>";
+        echo "<tr><td class='timeHourly'>";
         echo date('d-m H:i', $obj->hourly->data[$i]->time)."</th><td>";
         echo floatval($obj->hourly->data[$i]->temperature)."&deg;C / ";
         echo floatval($obj->hourly->data[$i]->apparentTemperature)."&deg;C</td>";
@@ -180,14 +187,14 @@
     echo "<table class='table table-weather'> <thead><tr>";
     echo "<th class='tableInfo'>Data i godzina</th><th class='tableInfo'>Min Temp / Max Temp</th><th class='tableInfo'>Maksymalne Opady / Zachmurzenie</th><th class='tableInfo'>Wiatr / Ciśnienie</th></tr></thead><tbody>";
     for ($i = 0; $i <= 7; $i++) {
-        echo "<tr><td scope='row'>";
+        echo "<tr><td scope='row' class='timeDaily'>";
         echo $obj->daily->data[$i]->summary;
         echo "<div id='sunrise'>Wschód ".date('H:i',$obj->daily->data[$i]->sunriseTime)."<br></div>";
         echo "<div id='sunset'>Zachód ".date('H:i',$obj->daily->data[$i]->sunsetTime)."<br></div>";
         echo date('d-m', $obj->daily->data[$i]->time)."</th><td>";
         echo floatval($obj->daily->data[$i]->temperatureMin)."&deg;C / ";
         echo ($obj->daily->data[$i]->temperatureMax)."&deg;C</td>";
-        echo "<td>".floatval($obj->daily->data[$i]->precipIntensityMax*100)." mm/godz / ".($obj->daily->data[$i]->cloudCover*100)."%"."</td>";
+        echo "<td>" . floatval($obj->daily->data[$i]->precipIntensityMax * 10) . " mm/12h / " . ($obj->daily->data[$i]->cloudCover * 100) . "%" . "</td>";
         echo "<td>".$obj->daily->data[$i]->windSpeed."m/s"." / ".$obj->daily->data[$i]->pressure."hPa"."</td>";
         echo "<td>"?>
         <canvas id="<?php echo "icon_daily".$i?>" width="64" height="64"></canvas>

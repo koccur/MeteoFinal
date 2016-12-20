@@ -46,6 +46,20 @@ class Server
         TestServer::enqueue($data);
     }
 
+    private static function convertResponse(Response $response)
+    {
+        $headers = array_map(function ($h) {
+            return implode(', ', $h);
+        }, $response->getHeaders());
+
+        return [
+            'status' => $response->getStatusCode(),
+            'reason' => $response->getReasonPhrase(),
+            'headers' => $headers,
+            'body' => base64_encode((string)$response->getBody())
+        ];
+    }
+
     /**
      * Get all of the received requests
      *
@@ -89,19 +103,5 @@ class Server
     public static function start()
     {
         TestServer::start();
-    }
-
-    private static function convertResponse(Response $response)
-    {
-        $headers = array_map(function ($h) {
-            return implode(', ', $h);
-        }, $response->getHeaders());
-
-        return [
-            'status'  => $response->getStatusCode(),
-            'reason'  => $response->getReasonPhrase(),
-            'headers' => $headers,
-            'body'    => base64_encode((string) $response->getBody())
-        ];
     }
 }

@@ -147,18 +147,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    private function getRequestClient()
-    {
-        $client = $this->getMockBuilder('GuzzleHttp\Client')
-            ->setMethods(['send'])
-            ->getMock();
-        $client->expects($this->once())
-            ->method('send')
-            ->will($this->returnArgument(0));
-
-        return $client;
-    }
-
     public function requestMethodProvider()
     {
         return [
@@ -196,6 +184,18 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         if ($body) {
             $this->assertEquals($body, $request->getBody());
         }
+    }
+
+    private function getRequestClient()
+    {
+        $client = $this->getMockBuilder('GuzzleHttp\Client')
+            ->setMethods(['send'])
+            ->getMock();
+        $client->expects($this->once())
+            ->method('send')
+            ->will($this->returnArgument(0));
+
+        return $client;
     }
 
     public function testClientMergesDefaultOptionsWithRequestOptions()

@@ -22,22 +22,12 @@ class MessageFactory implements MessageFactoryInterface
 {
     use ListenerAttacherTrait;
 
-    /** @var HttpError */
-    private $errorPlugin;
-
-    /** @var Redirect */
-    private $redirectPlugin;
-
-    /** @var array */
-    private $customOptions;
-
     /** @var array Request options passed through to request Config object */
     private static $configMap = [
         'connect_timeout' => 1, 'timeout' => 1, 'verify' => 1, 'ssl_key' => 1,
         'cert' => 1, 'proxy' => 1, 'debug' => 1, 'save_to' => 1, 'stream' => 1,
         'expect' => 1, 'future' => 1
     ];
-
     /** @var array Default allow_redirects request option settings  */
     private static $defaultRedirect = [
         'max'       => 5,
@@ -45,6 +35,12 @@ class MessageFactory implements MessageFactoryInterface
         'referer'   => false,
         'protocols' => ['http', 'https']
     ];
+    /** @var HttpError */
+    private $errorPlugin;
+    /** @var Redirect */
+    private $redirectPlugin;
+    /** @var array */
+    private $customOptions;
 
     /**
      * @param array $customOptions Associative array of custom request option
@@ -57,48 +53,6 @@ class MessageFactory implements MessageFactoryInterface
         $this->errorPlugin = new HttpError();
         $this->redirectPlugin = new Redirect();
         $this->customOptions = $customOptions;
-    }
-
-    public function createResponse(
-        $statusCode,
-        array $headers = [],
-        $body = null,
-        array $options = []
-    ) {
-        if (null !== $body) {
-            $body = Stream::factory($body);
-        }
-
-        return new Response($statusCode, $headers, $body, $options);
-    }
-
-    public function createRequest($method, $url, array $options = [])
-    {
-        // Handle the request protocol version option that needs to be
-        // specified in the request constructor.
-        if (isset($options['version'])) {
-            $options['config']['protocol_version'] = $options['version'];
-            unset($options['version']);
-        }
-
-        $request = new Request($method, $url, [], null,
-            isset($options['config']) ? $options['config'] : []);
-
-        unset($options['config']);
-
-        // Use a POST body by default
-        if ($method == 'POST'
-            && !isset($options['body'])
-            && !isset($options['json'])
-        ) {
-            $options['body'] = [];
-        }
-
-        if ($options) {
-            $this->applyOptions($request, $options);
-        }
-
-        return $request;
     }
 
     /**
@@ -145,34 +99,46 @@ class MessageFactory implements MessageFactoryInterface
         );
     }
 
-    /**
-     * Apply POST fields and files to a request to attempt to give an accurate
-     * representation.
-     *
-     * @param RequestInterface $request Request to update
-     * @param array            $body    Body to apply
-     */
-    protected function addPostData(RequestInterface $request, array $body)
+    public function createResponse(
+        $statusCode,
+        array $headers = [],
+        $body = null,
+        array $options = []
+    ) {
+        if (null !== $body) {
+            $body = Stream::factory($body);
+        }
+
+        return new Response($statusCode, $headers, $body, $options);
+    }
+
+    public function createRequest($method, $url, array $options = [])
     {
-        static $fields = ['string' => true, 'array' => true, 'NULL' => true,
-            'boolean' => true, 'double' => true, 'integer' => true];
-
-        $post = new PostBody();
-        foreach ($body as $key => $value) {
-            if (isset($fields[gettype($value)])) {
-                $post->setField($key, $value);
-            } elseif ($value instanceof PostFileInterface) {
-                $post->addFile($value);
-            } else {
-                $post->addFile(new PostFile($key, $value));
-            }
+        // Handle the request protocol version option that needs to be
+        // specified in the request constructor.
+        if (isset($options['version'])) {
+            $options['config']['protocol_version'] = $options['version'];
+            unset($options['version']);
         }
 
-        if ($request->getHeader('Content-Type') == 'multipart/form-data') {
-            $post->forceMultipartUpload(true);
+        $request = new Request($method, $url, [], null,
+            isset($options['config']) ? $options['config'] : []);
+
+        unset($options['config']);
+
+        // Use a POST body by default
+        if ($method == 'POST'
+            && !isset($options['body'])
+            && !isset($options['json'])
+        ) {
+            $options['body'] = [];
         }
 
-        $request->setBody($post);
+        if ($options) {
+            $this->applyOptions($request, $options);
+        }
+
+        return $request;
     }
 
     protected function applyOptions(
@@ -360,5 +326,35 @@ class MessageFactory implements MessageFactoryInterface
                 throw new Iae("No method can handle the {$key} config key");
             }
         }
+    }
+
+    /**
+     * Apply POST fields and files to a request to attempt to give an accurate
+     * representation.
+     *
+     * @param RequestInterface $request Request to update
+     * @param array            $body    Body to apply
+     */
+    protected function addPostData(RequestInterface $request, array $body)
+    {
+        static $fields = ['string' => true, 'array' => true, 'NULL' => true,
+            'boolean' => true, 'double' => true, 'integer' => true];
+
+        $post = new PostBody();
+        foreach ($body as $key => $value) {
+            if (isset($fields[gettype($value)])) {
+                $post->setField($key, $value);
+            } elseif ($value instanceof PostFileInterface) {
+                $post->addFile($value);
+            } else {
+                $post->addFile(new PostFile($key, $value));
+            }
+        }
+
+        if ($request->getHeader('Content-Type') == 'multipart/form-data') {
+            $post->forceMultipartUpload(true);
+        }
+
+        $request->setBody($post);
     }
 }

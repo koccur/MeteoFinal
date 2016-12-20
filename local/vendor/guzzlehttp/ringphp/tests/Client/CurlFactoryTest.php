@@ -334,6 +334,22 @@ class CurlFactoryTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function testDecodesGzippedResponses()
+    {
+        $this->addDecodeResponse();
+        $handler = new CurlMultiHandler();
+        $response = $handler([
+            'http_method' => 'GET',
+            'headers'     => ['host' => [Server::$host]],
+            'client'      => ['decode_content' => true],
+        ]);
+        $response->wait();
+        $this->assertEquals('test', Core::body($response));
+        $this->assertEquals('', $_SERVER['_curl'][CURLOPT_ENCODING]);
+        $sent = Server::received()[0];
+        $this->assertNull(Core::header($sent, 'Accept-Encoding'));
+    }
+
     private function addDecodeResponse($withEncoding = true)
     {
         $content = gzencode('test');
@@ -352,22 +368,6 @@ class CurlFactoryTest extends \PHPUnit_Framework_TestCase
         Server::enqueue([$response]);
 
         return $content;
-    }
-
-    public function testDecodesGzippedResponses()
-    {
-        $this->addDecodeResponse();
-        $handler = new CurlMultiHandler();
-        $response = $handler([
-            'http_method' => 'GET',
-            'headers'     => ['host' => [Server::$host]],
-            'client'      => ['decode_content' => true],
-        ]);
-        $response->wait();
-        $this->assertEquals('test', Core::body($response));
-        $this->assertEquals('', $_SERVER['_curl'][CURLOPT_ENCODING]);
-        $sent = Server::received()[0];
-        $this->assertNull(Core::header($sent, 'Accept-Encoding'));
     }
 
     public function testDecodesGzippedResponsesWithHeader()

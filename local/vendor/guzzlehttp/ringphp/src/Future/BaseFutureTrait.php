@@ -66,32 +66,6 @@ trait BaseFutureTrait
         return $this->result;
     }
 
-    public function promise()
-    {
-        return $this->wrappedPromise;
-    }
-
-    public function then(
-        callable $onFulfilled = null,
-        callable $onRejected = null,
-        callable $onProgress = null
-    ) {
-        return $this->wrappedPromise->then($onFulfilled, $onRejected, $onProgress);
-    }
-
-    public function cancel()
-    {
-        if (!$this->isRealized) {
-            $cancelfn = $this->cancelfn;
-            $this->waitfn = $this->cancelfn = null;
-            $this->isRealized = true;
-            $this->error = new CancelledFutureAccessException();
-            if ($cancelfn) {
-                $cancelfn($this);
-            }
-        }
-    }
-
     private function addShadow()
     {
         // Get the result and error when the promise is resolved. Note that
@@ -120,6 +94,32 @@ trait BaseFutureTrait
             // Defer can throw to reject.
             $this->error = $e;
             $this->isRealized = true;
+        }
+    }
+
+    public function promise()
+    {
+        return $this->wrappedPromise;
+    }
+
+    public function then(
+        callable $onFulfilled = null,
+        callable $onRejected = null,
+        callable $onProgress = null
+    ) {
+        return $this->wrappedPromise->then($onFulfilled, $onRejected, $onProgress);
+    }
+
+    public function cancel()
+    {
+        if (!$this->isRealized) {
+            $cancelfn = $this->cancelfn;
+            $this->waitfn = $this->cancelfn = null;
+            $this->isRealized = true;
+            $this->error = new CancelledFutureAccessException();
+            if ($cancelfn) {
+                $cancelfn($this);
+            }
         }
     }
 }

@@ -133,14 +133,6 @@ class FingersCrossedHandler extends AbstractHandler
     }
 
     /**
-     * Resets the state of the handler. Stops forwarding records to the wrapped handler.
-     */
-    public function reset()
-    {
-        $this->buffering = true;
-    }
-
-    /**
      * Clears the buffer without flushing any messages down to the wrapped handler.
      *
      * It also resets the handler to its initial buffering state.
@@ -149,5 +141,13 @@ class FingersCrossedHandler extends AbstractHandler
     {
         $this->buffer = array();
         $this->reset();
+    }
+
+    /**
+     * Resets the state of the handler. Stops forwarding records to the wrapped handler.
+     */
+    public function reset()
+    {
+        $this->buffering = true;
     }
 }

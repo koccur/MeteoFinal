@@ -91,6 +91,90 @@ class Client implements ClientInterface
         }
     }
 
+    private function configureBaseUrl(&$config)
+    {
+        if (!isset($config['base_url'])) {
+            $this->baseUrl = new Url('', '');
+        } elseif (!is_array($config['base_url'])) {
+            $this->baseUrl = Url::fromString($config['base_url']);
+        } elseif (count($config['base_url']) < 2) {
+            throw new \InvalidArgumentException('You must provide a hash of '
+                . 'varname options in the second element of a base_url array.');
+        } else {
+            $this->baseUrl = Url::fromString(
+                Utils::uriTemplate(
+                    $config['base_url'][0],
+                    $config['base_url'][1]
+                )
+            );
+            $config['base_url'] = (string)$this->baseUrl;
+        }
+    }
+
+    private function configureDefaults($config)
+    {
+        if (!isset($config['defaults'])) {
+            $this->defaults = $this->getDefaultOptions();
+        } else {
+            $this->defaults = array_replace(
+                $this->getDefaultOptions(),
+                $config['defaults']
+            );
+        }
+
+        // Add the default user-agent header
+        if (!isset($this->defaults['headers'])) {
+            $this->defaults['headers'] = [
+                'User-Agent' => Utils::getDefaultUserAgent()
+            ];
+        } elseif (!Core::hasHeader($this->defaults, 'User-Agent')) {
+            // Add the User-Agent header if one was not already set
+            $this->defaults['headers']['User-Agent'] = Utils::getDefaultUserAgent();
+        }
+    }
+
+    /**
+     * Get an array of default options to apply to the client
+     *
+     * @return array
+     */
+    protected function getDefaultOptions()
+    {
+        $settings = [
+            'allow_redirects' => true,
+            'exceptions' => true,
+            'decode_content' => true,
+            'verify' => true
+        ];
+
+        // Use the standard Linux HTTP_PROXY and HTTPS_PROXY if set
+        if ($proxy = getenv('HTTP_PROXY')) {
+            $settings['proxy']['http'] = $proxy;
+        }
+
+        if ($proxy = getenv('HTTPS_PROXY')) {
+            $settings['proxy']['https'] = $proxy;
+        }
+
+        return $settings;
+    }
+
+    /**
+     * @deprecated Use GuzzleHttp\Utils::getDefaultHandler
+     */
+    public static function getDefaultHandler()
+    {
+        return Utils::getDefaultHandler();
+    }
+
+    /**
+     * @deprecated Use GuzzleHttp\Utils::getDefaultUserAgent
+     */
+    public static function getDefaultUserAgent()
+    {
+        return Utils::getDefaultUserAgent();
+    }
+
     public function getDefaultOption($keyOrPath = null)
     {
         return $keyOrPath === null
@@ -105,54 +189,12 @@ class Client implements ClientInterface
 
     public function getBaseUrl()
     {
-        return (string) $this->baseUrl;
-    }
-
-    public function createRequest($method, $url = null, array $options = [])
-    {
-        $options = $this->mergeDefaults($options);
-        // Use a clone of the client's emitter
-        $options['config']['emitter'] = clone $this->getEmitter();
-        $url = $url || (is_string($url) && strlen($url))
-            ? $this->buildUrl($url)
-            : (string) $this->baseUrl;
-
-        return $this->messageFactory->createRequest($method, $url, $options);
+        return (string)$this->baseUrl;
     }
 
     public function get($url = null, $options = [])
     {
         return $this->send($this->createRequest('GET', $url, $options));
-    }
-
-    public function head($url = null, array $options = [])
-    {
-        return $this->send($this->createRequest('HEAD', $url, $options));
-    }
-
-    public function delete($url = null, array $options = [])
-    {
-        return $this->send($this->createRequest('DELETE', $url, $options));
-    }
-
-    public function put($url = null, array $options = [])
-    {
-        return $this->send($this->createRequest('PUT', $url, $options));
-    }
-
-    public function patch($url = null, array $options = [])
-    {
-        return $this->send($this->createRequest('PATCH', $url, $options));
-    }
-
-    public function post($url = null, array $options = [])
-    {
-        return $this->send($this->createRequest('POST', $url, $options));
-    }
-
-    public function options($url = null, array $options = [])
-    {
-        return $this->send($this->createRequest('OPTIONS', $url, $options));
     }
 
     public function send(RequestInterface $request)
@@ -185,105 +227,16 @@ class Client implements ClientInterface
         }
     }
 
-    /**
-     * Get an array of default options to apply to the client
-     *
-     * @return array
-     */
-    protected function getDefaultOptions()
+    public function createRequest($method, $url = null, array $options = [])
     {
-        $settings = [
-            'allow_redirects' => true,
-            'exceptions'      => true,
-            'decode_content'  => true,
-            'verify'          => true
-        ];
+        $options = $this->mergeDefaults($options);
+        // Use a clone of the client's emitter
+        $options['config']['emitter'] = clone $this->getEmitter();
+        $url = $url || (is_string($url) && strlen($url))
+            ? $this->buildUrl($url)
+            : (string)$this->baseUrl;
 
-        // Use the standard Linux HTTP_PROXY and HTTPS_PROXY if set
-        if ($proxy = getenv('HTTP_PROXY')) {
-            $settings['proxy']['http'] = $proxy;
-        }
-
-        if ($proxy = getenv('HTTPS_PROXY')) {
-            $settings['proxy']['https'] = $proxy;
-        }
-
-        return $settings;
-    }
-
-    /**
-     * Expand a URI template and inherit from the base URL if it's relative
-     *
-     * @param string|array $url URL or an array of the URI template to expand
-     *                          followed by a hash of template varnames.
-     * @return string
-     * @throws \InvalidArgumentException
-     */
-    private function buildUrl($url)
-    {
-        // URI template (absolute or relative)
-        if (!is_array($url)) {
-            return strpos($url, '://')
-                ? (string) $url
-                : (string) $this->baseUrl->combine($url);
-        }
-
-        if (!isset($url[1])) {
-            throw new \InvalidArgumentException('You must provide a hash of '
-                . 'varname options in the second element of a URL array.');
-        }
-
-        // Absolute URL
-        if (strpos($url[0], '://')) {
-            return Utils::uriTemplate($url[0], $url[1]);
-        }
-
-        // Combine the relative URL with the base URL
-        return (string) $this->baseUrl->combine(
-            Utils::uriTemplate($url[0], $url[1])
-        );
-    }
-
-    private function configureBaseUrl(&$config)
-    {
-        if (!isset($config['base_url'])) {
-            $this->baseUrl = new Url('', '');
-        } elseif (!is_array($config['base_url'])) {
-            $this->baseUrl = Url::fromString($config['base_url']);
-        } elseif (count($config['base_url']) < 2) {
-            throw new \InvalidArgumentException('You must provide a hash of '
-                . 'varname options in the second element of a base_url array.');
-        } else {
-            $this->baseUrl = Url::fromString(
-                Utils::uriTemplate(
-                    $config['base_url'][0],
-                    $config['base_url'][1]
-                )
-            );
-            $config['base_url'] = (string) $this->baseUrl;
-        }
-    }
-
-    private function configureDefaults($config)
-    {
-        if (!isset($config['defaults'])) {
-            $this->defaults = $this->getDefaultOptions();
-        } else {
-            $this->defaults = array_replace(
-                $this->getDefaultOptions(),
-                $config['defaults']
-            );
-        }
-
-        // Add the default user-agent header
-        if (!isset($this->defaults['headers'])) {
-            $this->defaults['headers'] = [
-                'User-Agent' => Utils::getDefaultUserAgent()
-            ];
-        } elseif (!Core::hasHeader($this->defaults, 'User-Agent')) {
-            // Add the User-Agent header if one was not already set
-            $this->defaults['headers']['User-Agent'] = Utils::getDefaultUserAgent();
-        }
+        return $this->messageFactory->createRequest($method, $url, $options);
     }
 
     /**
@@ -326,27 +279,74 @@ class Client implements ClientInterface
     }
 
     /**
+     * Expand a URI template and inherit from the base URL if it's relative
+     *
+     * @param string|array $url URL or an array of the URI template to expand
+     *                          followed by a hash of template varnames.
+     * @return string
+     * @throws \InvalidArgumentException
+     */
+    private function buildUrl($url)
+    {
+        // URI template (absolute or relative)
+        if (!is_array($url)) {
+            return strpos($url, '://')
+                ? (string) $url
+                : (string) $this->baseUrl->combine($url);
+        }
+
+        if (!isset($url[1])) {
+            throw new \InvalidArgumentException('You must provide a hash of '
+                . 'varname options in the second element of a URL array.');
+        }
+
+        // Absolute URL
+        if (strpos($url[0], '://')) {
+            return Utils::uriTemplate($url[0], $url[1]);
+        }
+
+        // Combine the relative URL with the base URL
+        return (string) $this->baseUrl->combine(
+            Utils::uriTemplate($url[0], $url[1])
+        );
+    }
+
+    public function head($url = null, array $options = [])
+    {
+        return $this->send($this->createRequest('HEAD', $url, $options));
+    }
+
+    public function delete($url = null, array $options = [])
+    {
+        return $this->send($this->createRequest('DELETE', $url, $options));
+    }
+
+    public function put($url = null, array $options = [])
+    {
+        return $this->send($this->createRequest('PUT', $url, $options));
+    }
+
+    public function patch($url = null, array $options = [])
+    {
+        return $this->send($this->createRequest('PATCH', $url, $options));
+    }
+
+    public function post($url = null, array $options = [])
+    {
+        return $this->send($this->createRequest('POST', $url, $options));
+    }
+
+    public function options($url = null, array $options = [])
+    {
+        return $this->send($this->createRequest('OPTIONS', $url, $options));
+    }
+
+    /**
      * @deprecated Use {@see GuzzleHttp\Pool} instead.
      * @see GuzzleHttp\Pool
      */
     public function sendAll($requests, array $options = [])
     {
         Pool::send($this, $requests, $options);
-    }
-
-    /**
-     * @deprecated Use GuzzleHttp\Utils::getDefaultHandler
-     */
-    public static function getDefaultHandler()
-    {
-        return Utils::getDefaultHandler();
-    }
-
-    /**
-     * @deprecated Use GuzzleHttp\Utils::getDefaultUserAgent
-     */
-    public static function getDefaultUserAgent()
-    {
-        return Utils::getDefaultUserAgent();
     }
 }

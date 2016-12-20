@@ -50,9 +50,51 @@ class PostBody implements PostBodyInterface
         }
     }
 
-    public function forceMultipartUpload($force)
+    /**
+     * Return a stream object that is built from the POST fields and files.
+     *
+     * If one has already been created, the previously created stream will be
+     * returned.
+     */
+    private function getBody()
     {
-        $this->forceMultipart = $force;
+        if ($this->body) {
+            return $this->body;
+        } elseif ($this->files || $this->forceMultipart) {
+            return $this->body = $this->createMultipart();
+        } elseif ($this->fields) {
+            return $this->body = $this->createUrlEncoded();
+        } else {
+            return $this->body = Stream::factory();
+        }
+    }
+
+    /**
+     * Creates a multipart/form-data body stream
+     *
+     * @return MultipartBody
+     */
+    private function createMultipart()
+    {
+        // Flatten the nested query string values using the correct aggregator
+        return new MultipartBody(
+            call_user_func($this->getAggregator(), $this->fields),
+            $this->files
+        );
+    }
+
+    /**
+     * Get the aggregator used to join multi-valued field parameters
+     *
+     * @return callable
+     */
+    final protected function getAggregator()
+    {
+        if (!$this->aggregator) {
+            $this->aggregator = Query::phpAggregator();
+        }
+
+        return $this->aggregator;
     }
 
     public function setAggregator(callable $aggregator)
@@ -60,10 +102,51 @@ class PostBody implements PostBodyInterface
         $this->aggregator = $aggregator;
     }
 
+    /**
+     * Creates an application/x-www-form-urlencoded stream body
+     *
+     * @return StreamInterface
+     */
+    private function createUrlEncoded()
+    {
+        return Stream::factory($this->getFields(true));
+    }
+
+    public function getFields($asString = false)
+    {
+        if (!$asString) {
+            return $this->fields;
+        }
+
+        $query = new Query($this->fields);
+        $query->setEncodingType(Query::RFC1738);
+        $query->setAggregator($this->getAggregator());
+
+        return (string)$query;
+    }
+
+    public function getSize()
+    {
+        return $this->getBody()->getSize();
+    }
+
+    public function forceMultipartUpload($force)
+    {
+        $this->forceMultipart = $force;
+    }
+
     public function setField($name, $value)
     {
         $this->fields[$name] = $value;
         $this->mutate();
+    }
+
+    /**
+     * Get rid of any cached data
+     */
+    private function mutate()
+    {
+        $this->body = null;
     }
 
     public function replaceFields(array $fields)
@@ -81,19 +164,6 @@ class PostBody implements PostBodyInterface
     {
         unset($this->fields[$name]);
         $this->mutate();
-    }
-
-    public function getFields($asString = false)
-    {
-        if (!$asString) {
-            return $this->fields;
-        }
-
-        $query = new Query($this->fields);
-        $query->setEncodingType(Query::RFC1738);
-        $query->setAggregator($this->getAggregator());
-
-        return (string) $query;
     }
 
     public function hasField($name)
@@ -195,11 +265,6 @@ class PostBody implements PostBodyInterface
         return false;
     }
 
-    public function getSize()
-    {
-        return $this->getBody()->getSize();
-    }
-
     public function seek($offset, $whence = SEEK_SET)
     {
         return $this->getBody()->seek($offset, $whence);
@@ -218,70 +283,5 @@ class PostBody implements PostBodyInterface
     public function getMetadata($key = null)
     {
         return $key ? null : [];
-    }
-
-    /**
-     * Return a stream object that is built from the POST fields and files.
-     *
-     * If one has already been created, the previously created stream will be
-     * returned.
-     */
-    private function getBody()
-    {
-        if ($this->body) {
-            return $this->body;
-        } elseif ($this->files || $this->forceMultipart) {
-            return $this->body = $this->createMultipart();
-        } elseif ($this->fields) {
-            return $this->body = $this->createUrlEncoded();
-        } else {
-            return $this->body = Stream::factory();
-        }
-    }
-
-    /**
-     * Get the aggregator used to join multi-valued field parameters
-     *
-     * @return callable
-     */
-    final protected function getAggregator()
-    {
-        if (!$this->aggregator) {
-            $this->aggregator = Query::phpAggregator();
-        }
-
-        return $this->aggregator;
-    }
-
-    /**
-     * Creates a multipart/form-data body stream
-     *
-     * @return MultipartBody
-     */
-    private function createMultipart()
-    {
-        // Flatten the nested query string values using the correct aggregator
-        return new MultipartBody(
-            call_user_func($this->getAggregator(), $this->fields),
-            $this->files
-        );
-    }
-
-    /**
-     * Creates an application/x-www-form-urlencoded stream body
-     *
-     * @return StreamInterface
-     */
-    private function createUrlEncoded()
-    {
-        return Stream::factory($this->getFields(true));
-    }
-
-    /**
-     * Get rid of any cached data
-     */
-    private function mutate()
-    {
-        $this->body = null;
     }
 }

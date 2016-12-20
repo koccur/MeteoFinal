@@ -18,20 +18,6 @@ use React\Promise\Deferred;
  */
 class MockTest extends \PHPUnit_Framework_TestCase
 {
-    public static function createFuture(
-        callable $wait,
-        callable $cancel = null
-    ) {
-        $deferred = new Deferred();
-        return new FutureResponse(
-            $deferred->promise(),
-            function () use ($deferred, $wait) {
-                $deferred->resolve($wait());
-            },
-            $cancel
-        );
-    }
-
     public function testDescribesSubscribedEvents()
     {
         $mock = new Mock();
@@ -136,6 +122,21 @@ class MockTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($future, $res);
         $this->assertFalse($this->readAttribute($res, 'isRealized'));
         $this->assertSame($response, $res->wait());
+    }
+
+    public static function createFuture(
+        callable $wait,
+        callable $cancel = null
+    )
+    {
+        $deferred = new Deferred();
+        return new FutureResponse(
+            $deferred->promise(),
+            function () use ($deferred, $wait) {
+                $deferred->resolve($wait());
+            },
+            $cancel
+        );
     }
 
     public function testCanMockExceptionFutureResponses()

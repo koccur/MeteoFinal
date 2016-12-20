@@ -17,111 +17,6 @@ abstract class AbstractMessage implements MessageInterface
     /** @var string HTTP protocol version of the message */
     private $protocolVersion = '1.1';
 
-    public function __toString()
-    {
-        return static::getStartLineAndHeaders($this)
-            . "\r\n\r\n" . $this->getBody();
-    }
-
-    public function getProtocolVersion()
-    {
-        return $this->protocolVersion;
-    }
-
-    public function getBody()
-    {
-        return $this->body;
-    }
-
-    public function setBody(StreamInterface $body = null)
-    {
-        if ($body === null) {
-            // Setting a null body will remove the body of the request
-            $this->removeHeader('Content-Length');
-            $this->removeHeader('Transfer-Encoding');
-        }
-
-        $this->body = $body;
-    }
-
-    public function addHeader($header, $value)
-    {
-        if (is_array($value)) {
-            $current = array_merge($this->getHeaderAsArray($header), $value);
-        } else {
-            $current = $this->getHeaderAsArray($header);
-            $current[] = (string) $value;
-        }
-
-        $this->setHeader($header, $current);
-    }
-
-    public function addHeaders(array $headers)
-    {
-        foreach ($headers as $name => $header) {
-            $this->addHeader($name, $header);
-        }
-    }
-
-    public function getHeader($header)
-    {
-        $name = strtolower($header);
-        return isset($this->headers[$name])
-            ? implode(', ', $this->headers[$name])
-            : '';
-    }
-
-    public function getHeaderAsArray($header)
-    {
-        $name = strtolower($header);
-        return isset($this->headers[$name]) ? $this->headers[$name] : [];
-    }
-
-    public function getHeaders()
-    {
-        $headers = [];
-        foreach ($this->headers as $name => $values) {
-            $headers[$this->headerNames[$name]] = $values;
-        }
-
-        return $headers;
-    }
-
-    public function setHeader($header, $value)
-    {
-        $header = trim($header);
-        $name = strtolower($header);
-        $this->headerNames[$name] = $header;
-
-        if (is_array($value)) {
-            foreach ($value as &$v) {
-                $v = trim($v);
-            }
-            $this->headers[$name] = $value;
-        } else {
-            $this->headers[$name] = [trim($value)];
-        }
-    }
-
-    public function setHeaders(array $headers)
-    {
-        $this->headers = $this->headerNames = [];
-        foreach ($headers as $key => $value) {
-            $this->setHeader($key, $value);
-        }
-    }
-
-    public function hasHeader($header)
-    {
-        return isset($this->headers[strtolower($header)]);
-    }
-
-    public function removeHeader($header)
-    {
-        $name = strtolower($header);
-        unset($this->headers[$name], $this->headerNames[$name]);
-    }
-
     /**
      * Parse an array of header values containing ";" separated data into an
      * array of associative arrays representing the header key value pair
@@ -183,6 +78,12 @@ abstract class AbstractMessage implements MessageInterface
         return $h;
     }
 
+    public function __toString()
+    {
+        return static::getStartLineAndHeaders($this)
+            . "\r\n\r\n" . $this->getBody();
+    }
+
     /**
      * Gets the start-line and headers of a message as a string
      *
@@ -194,23 +95,6 @@ abstract class AbstractMessage implements MessageInterface
     {
         return static::getStartLine($message)
             . self::getHeadersAsString($message);
-    }
-
-    /**
-     * Gets the headers of a message as a string
-     *
-     * @param MessageInterface $message
-     *
-     * @return string
-     */
-    public static function getHeadersAsString(MessageInterface $message)
-    {
-        $result  = '';
-        foreach ($message->getHeaders() as $name => $values) {
-            $result .= "\r\n{$name}: " . implode(', ', $values);
-        }
-
-        return $result;
     }
 
     /**
@@ -234,6 +118,122 @@ abstract class AbstractMessage implements MessageInterface
         } else {
             throw new \InvalidArgumentException('Unknown message type');
         }
+    }
+
+    /**
+     * Gets the headers of a message as a string
+     *
+     * @param MessageInterface $message
+     *
+     * @return string
+     */
+    public static function getHeadersAsString(MessageInterface $message)
+    {
+        $result  = '';
+        foreach ($message->getHeaders() as $name => $values) {
+            $result .= "\r\n{$name}: " . implode(', ', $values);
+        }
+
+        return $result;
+    }
+
+    public function getBody()
+    {
+        return $this->body;
+    }
+
+    public function setBody(StreamInterface $body = null)
+    {
+        if ($body === null) {
+            // Setting a null body will remove the body of the request
+            $this->removeHeader('Content-Length');
+            $this->removeHeader('Transfer-Encoding');
+        }
+
+        $this->body = $body;
+    }
+
+    public function removeHeader($header)
+    {
+        $name = strtolower($header);
+        unset($this->headers[$name], $this->headerNames[$name]);
+    }
+
+    public function getProtocolVersion()
+    {
+        return $this->protocolVersion;
+    }
+
+    public function addHeaders(array $headers)
+    {
+        foreach ($headers as $name => $header) {
+            $this->addHeader($name, $header);
+        }
+    }
+
+    public function addHeader($header, $value)
+    {
+        if (is_array($value)) {
+            $current = array_merge($this->getHeaderAsArray($header), $value);
+        } else {
+            $current = $this->getHeaderAsArray($header);
+            $current[] = (string) $value;
+        }
+
+        $this->setHeader($header, $current);
+    }
+
+    public function getHeaderAsArray($header)
+    {
+        $name = strtolower($header);
+        return isset($this->headers[$name]) ? $this->headers[$name] : [];
+    }
+
+    public function setHeader($header, $value)
+    {
+        $header = trim($header);
+        $name = strtolower($header);
+        $this->headerNames[$name] = $header;
+
+        if (is_array($value)) {
+            foreach ($value as &$v) {
+                $v = trim($v);
+            }
+            $this->headers[$name] = $value;
+        } else {
+            $this->headers[$name] = [trim($value)];
+        }
+    }
+
+    public function getHeader($header)
+    {
+        $name = strtolower($header);
+        return isset($this->headers[$name])
+            ? implode(', ', $this->headers[$name])
+            : '';
+    }
+
+    public function getHeaders()
+    {
+        $headers = [];
+        foreach ($this->headers as $name => $values) {
+            $headers[$this->headerNames[$name]] = $values;
+        }
+
+        return $headers;
+    }
+
+    public function setHeaders(array $headers)
+    {
+        $this->headers = $this->headerNames = [];
+        foreach ($headers as $key => $value) {
+            $this->setHeader($key, $value);
+        }
+    }
+
+    public function hasHeader($header)
+    {
+        return isset($this->headers[strtolower($header)]);
     }
 
     /**

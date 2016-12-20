@@ -24,6 +24,14 @@ class PrepareTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($t->request->hasHeader('Expect'));
     }
 
+    private function getTrans($request = null)
+    {
+        return new Transaction(
+            new Client(),
+            $request ?: new Request('PUT', '/')
+        );
+    }
+
     public function testAppliesPostBody()
     {
         $s = new Prepare();
@@ -132,6 +140,25 @@ class PrepareTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(4, $t->request->getHeader('Content-Length'));
     }
 
+    /**
+     * @return \GuzzleHttp\Stream\StreamInterface
+     */
+    private function getMockBody()
+    {
+        $s = $this->getMockBuilder('GuzzleHttp\Stream\MetadataStreamInterface')
+            ->setMethods(['getMetadata', 'getSize'])
+            ->getMockForAbstractClass();
+        $s->expects($this->any())
+            ->method('getMetadata')
+            ->with('uri')
+            ->will($this->returnValue('/foo/baz/bar.jpg'));
+        $s->expects($this->exactly(2))
+            ->method('getSize')
+            ->will($this->returnValue(4));
+
+        return $s;
+    }
+
     public function testDoesNotOverwriteExistingContentType()
     {
         $s = new Prepare();
@@ -182,32 +209,5 @@ class PrepareTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('PUT', $request->getMethod());
         $this->assertEquals('4', $request->getHeader('Content-Length'));
         $this->assertEquals('test', (string) $request->getBody());
-    }
-
-    private function getTrans($request = null)
-    {
-        return new Transaction(
-            new Client(),
-            $request ?: new Request('PUT', '/')
-        );
-    }
-
-    /**
-     * @return \GuzzleHttp\Stream\StreamInterface
-     */
-    private function getMockBody()
-    {
-        $s = $this->getMockBuilder('GuzzleHttp\Stream\MetadataStreamInterface')
-            ->setMethods(['getMetadata', 'getSize'])
-            ->getMockForAbstractClass();
-        $s->expects($this->any())
-            ->method('getMetadata')
-            ->with('uri')
-            ->will($this->returnValue('/foo/baz/bar.jpg'));
-        $s->expects($this->exactly(2))
-            ->method('getSize')
-            ->will($this->returnValue(4));
-
-        return $s;
     }
 }

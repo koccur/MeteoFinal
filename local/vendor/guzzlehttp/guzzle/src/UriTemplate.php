@@ -8,12 +8,6 @@ namespace GuzzleHttp;
  */
 class UriTemplate
 {
-    /** @var string URI template */
-    private $template;
-
-    /** @var array Variables to use in the template expansion */
-    private $variables;
-
     /** @var array Hash for quick operator lookups */
     private static $operatorHash = array(
         ''  => array('prefix' => '',  'joiner' => ',', 'query' => false),
@@ -25,15 +19,17 @@ class UriTemplate
         '?' => array('prefix' => '?', 'joiner' => '&', 'query' => true),
         '&' => array('prefix' => '&', 'joiner' => '&', 'query' => true)
     );
-
     /** @var array Delimiters */
     private static $delims = array(':', '/', '?', '#', '[', ']', '@', '!', '$',
         '&', '\'', '(', ')', '*', '+', ',', ';', '=');
-
     /** @var array Percent encoded delimiters */
     private static $delimsPct = array('%3A', '%2F', '%3F', '%23', '%5B', '%5D',
         '%40', '%21', '%24', '%26', '%27', '%28', '%29', '%2A', '%2B', '%2C',
         '%3B', '%3D');
+    /** @var string URI template */
+    private $template;
+    /** @var array Variables to use in the template expansion */
+    private $variables;
 
     public function expand($template, array $variables)
     {
@@ -49,44 +45,6 @@ class UriTemplate
             [$this, 'expandMatch'],
             $this->template
         );
-    }
-
-    /**
-     * Parse an expression into parts
-     *
-     * @param string $expression Expression to parse
-     *
-     * @return array Returns an associative array of parts
-     */
-    private function parseExpression($expression)
-    {
-        $result = array();
-
-        if (isset(self::$operatorHash[$expression[0]])) {
-            $result['operator'] = $expression[0];
-            $expression = substr($expression, 1);
-        } else {
-            $result['operator'] = '';
-        }
-
-        foreach (explode(',', $expression) as $value) {
-            $value = trim($value);
-            $varspec = array();
-            if ($colonPos = strpos($value, ':')) {
-                $varspec['value'] = substr($value, 0, $colonPos);
-                $varspec['modifier'] = ':';
-                $varspec['position'] = (int) substr($value, $colonPos + 1);
-            } elseif (substr($value, -1) == '*') {
-                $varspec['modifier'] = '*';
-                $varspec['value'] = substr($value, 0, -1);
-            } else {
-                $varspec['value'] = (string) $value;
-                $varspec['modifier'] = '';
-            }
-            $result['values'][] = $varspec;
-        }
-
-        return $result;
     }
 
     /**
@@ -207,6 +165,44 @@ class UriTemplate
         }
 
         return $ret;
+    }
+
+    /**
+     * Parse an expression into parts
+     *
+     * @param string $expression Expression to parse
+     *
+     * @return array Returns an associative array of parts
+     */
+    private function parseExpression($expression)
+    {
+        $result = array();
+
+        if (isset(self::$operatorHash[$expression[0]])) {
+            $result['operator'] = $expression[0];
+            $expression = substr($expression, 1);
+        } else {
+            $result['operator'] = '';
+        }
+
+        foreach (explode(',', $expression) as $value) {
+            $value = trim($value);
+            $varspec = array();
+            if ($colonPos = strpos($value, ':')) {
+                $varspec['value'] = substr($value, 0, $colonPos);
+                $varspec['modifier'] = ':';
+                $varspec['position'] = (int)substr($value, $colonPos + 1);
+            } elseif (substr($value, -1) == '*') {
+                $varspec['modifier'] = '*';
+                $varspec['value'] = substr($value, 0, -1);
+            } else {
+                $varspec['value'] = (string)$value;
+                $varspec['modifier'] = '';
+            }
+            $result['values'][] = $varspec;
+        }
+
+        return $result;
     }
 
     /**

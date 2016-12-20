@@ -54,6 +54,21 @@ class PoolTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($p->cancel());
     }
 
+    private function getClient()
+    {
+        $deferred = new Deferred();
+        $future = new FutureArray(
+            $deferred->promise(),
+            function() use ($deferred) {
+                $deferred->resolve(['status' => 200, 'headers' => []]);
+            }, function () {
+                echo 'Cancelling';
+            }
+        );
+
+        return new Client(['handler' => new MockHandler($future)]);
+    }
+
     public function testSendsManyRequestsInCappedPool()
     {
         $c = $this->getClient();
@@ -94,21 +109,6 @@ class PoolTest extends \PHPUnit_Framework_TestCase
         $contents = ob_get_clean();
         $this->assertEquals(1, count($h));
         $this->assertEquals('Cancelling', $contents);
-    }
-
-    private function getClient()
-    {
-        $deferred = new Deferred();
-        $future = new FutureArray(
-            $deferred->promise(),
-            function() use ($deferred) {
-                $deferred->resolve(['status' => 200, 'headers' => []]);
-            }, function () {
-                echo 'Cancelling';
-            }
-        );
-
-        return new Client(['handler' => new MockHandler($future)]);
     }
 
     public function testBatchesRequests()

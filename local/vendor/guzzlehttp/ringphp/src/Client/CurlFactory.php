@@ -13,48 +13,6 @@ use GuzzleHttp\Stream\StreamInterface;
 class CurlFactory
 {
     /**
-     * Creates a cURL handle, header resource, and body resource based on a
-     * transaction.
-     *
-     * @param array         $request Request hash
-     * @param null|resource $handle  Optionally provide a curl handle to modify
-     *
-     * @return array Returns an array of the curl handle, headers array, and
-     *               response body handle.
-     * @throws \RuntimeException when an option cannot be applied
-     */
-    public function __invoke(array $request, $handle = null)
-    {
-        $headers = [];
-        $options = $this->getDefaultOptions($request, $headers);
-        $this->applyMethod($request, $options);
-
-        if (isset($request['client'])) {
-            $this->applyHandlerOptions($request, $options);
-        }
-
-        $this->applyHeaders($request, $options);
-        unset($options['_headers']);
-
-        // Add handler options from the request's configuration options
-        if (isset($request['client']['curl'])) {
-            $options = $this->applyCustomCurlOptions(
-                $request['client']['curl'],
-                $options
-            );
-        }
-
-        if (!$handle) {
-            $handle = curl_init();
-        }
-
-        $body = $this->getOutputBody($request, $options);
-        curl_setopt_array($handle, $options);
-
-        return [$handle, &$headers, $body];
-    }
-
-    /**
      * Creates a response hash from a cURL result.
      *
      * @param callable $handler  Handler that was used.
@@ -135,23 +93,94 @@ class CurlFactory
         ];
     }
 
-    private function getOutputBody(array $request, array &$options)
+    /**
+     * This function ensures that a response was set on a transaction. If one
+     * was not set, then the request is retried if possible. This error
+     * typically means you are sending a payload, curl encountered a
+     * "Connection died, retrying a fresh connect" error, tried to rewind the
+     * stream, and then encountered a "necessary data rewind wasn't possible"
+     * error, causing the request to be sent through curl_multi_info_read()
+     * without an error status.
+     */
+    private static function retryFailedRewind(
+        callable $handler,
+        array $request,
+        array $response
+    )
     {
-        // Determine where the body of the response (if any) will be streamed.
-        if (isset($options[CURLOPT_WRITEFUNCTION])) {
-            return $request['client']['save_to'];
+        // If there is no body, then there is some other kind of issue. This
+        // is weird and should probably never happen.
+        if (!isset($request['body'])) {
+            $response['err_message'] = 'No response was received for a request '
+                . 'with no body. This could mean that you are saturating your '
+                . 'network.';
+            return self::createErrorResponse($handler, $request, $response);
         }
 
-        if (isset($options[CURLOPT_FILE])) {
-            return $options[CURLOPT_FILE];
+        if (!Core::rewindBody($request)) {
+            $response['err_message'] = 'The connection unexpectedly failed '
+                . 'without providing an error. The request would have been '
+                . 'retried, but attempting to rewind the request body failed.';
+            return self::createErrorResponse($handler, $request, $response);
         }
 
-        if ($request['http_method'] != 'HEAD') {
-            // Create a default body if one was not provided
-            return $options[CURLOPT_FILE] = fopen('php://temp', 'w+');
+        // Retry no more than 3 times before giving up.
+        if (!isset($request['curl']['retries'])) {
+            $request['curl']['retries'] = 1;
+        } elseif ($request['curl']['retries'] == 2) {
+            $response['err_message'] = 'The cURL request was retried 3 times '
+                . 'and did no succeed. cURL was unable to rewind the body of '
+                . 'the request and subsequent retries resulted in the same '
+                . 'error. Turn on the debug option to see what went wrong. '
+                . 'See https://bugs.php.net/bug.php?id=47204 for more information.';
+            return self::createErrorResponse($handler, $request, $response);
+        } else {
+            $request['curl']['retries']++;
         }
 
-        return null;
+        return $handler($request);
+    }
+
+    /**
+     * Creates a cURL handle, header resource, and body resource based on a
+     * transaction.
+     *
+     * @param array $request Request hash
+     * @param null|resource $handle Optionally provide a curl handle to modify
+     *
+     * @return array Returns an array of the curl handle, headers array, and
+     *               response body handle.
+     * @throws \RuntimeException when an option cannot be applied
+     */
+    public function __invoke(array $request, $handle = null)
+    {
+        $headers = [];
+        $options = $this->getDefaultOptions($request, $headers);
+        $this->applyMethod($request, $options);
+
+        if (isset($request['client'])) {
+            $this->applyHandlerOptions($request, $options);
+        }
+
+        $this->applyHeaders($request, $options);
+        unset($options['_headers']);
+
+        // Add handler options from the request's configuration options
+        if (isset($request['client']['curl'])) {
+            $options = $this->applyCustomCurlOptions(
+                $request['client']['curl'],
+                $options
+            );
+        }
+
+        if (!$handle) {
+            $handle = curl_init();
+        }
+
+        $body = $this->getOutputBody($request, $options);
+        curl_setopt_array($handle, $options);
+
+        return [$handle, &$headers, $body];
     }
 
     private function getDefaultOptions(array $request, array &$headers)
@@ -259,6 +288,22 @@ class CurlFactory
         }
     }
 
+    /**
+     * Remove a header from the options array.
+     *
+     * @param string $name Case-insensitive header to remove
+     * @param array $options Array of options to modify
+     */
+    private function removeHeader($name, array &$options)
+    {
+        foreach (array_keys($options['_headers']) as $key) {
+            if (!strcasecmp($key, $name)) {
+                unset($options['_headers'][$key]);
+                return;
+            }
+        }
+    }
+
     private function addStreamingBody(array $request, array &$options)
     {
         $body = $request['body'];
@@ -287,59 +332,6 @@ class CurlFactory
             };
         } else {
             throw new \InvalidArgumentException('Invalid request body provided');
-        }
-    }
-
-    private function applyHeaders(array $request, array &$options)
-    {
-        foreach ($options['_headers'] as $name => $values) {
-            foreach ($values as $value) {
-                $options[CURLOPT_HTTPHEADER][] = "$name: $value";
-            }
-        }
-
-        // Remove the Accept header if one was not set
-        if (!Core::hasHeader($request, 'Accept')) {
-            $options[CURLOPT_HTTPHEADER][] = 'Accept:';
-        }
-    }
-
-    /**
-     * Takes an array of curl options specified in the 'curl' option of a
-     * request's configuration array and maps them to CURLOPT_* options.
-     *
-     * This method is only called when a  request has a 'curl' config setting.
-     *
-     * @param array $config  Configuration array of custom curl option
-     * @param array $options Array of existing curl options
-     *
-     * @return array Returns a new array of curl options
-     */
-    private function applyCustomCurlOptions(array $config, array $options)
-    {
-        $curlOptions = [];
-        foreach ($config as $key => $value) {
-            if (is_int($key)) {
-                $curlOptions[$key] = $value;
-            }
-        }
-
-        return $curlOptions + $options;
-    }
-
-    /**
-     * Remove a header from the options array.
-     *
-     * @param string $name    Case-insensitive header to remove
-     * @param array  $options Array of options to modify
-     */
-    private function removeHeader($name, array &$options)
-    {
-        foreach (array_keys($options['_headers']) as $key) {
-            if (!strcasecmp($key, $name)) {
-                unset($options['_headers'][$key]);
-                return;
-            }
         }
     }
 
@@ -511,50 +503,59 @@ class CurlFactory
         }
     }
 
+    private function applyHeaders(array $request, array &$options)
+    {
+        foreach ($options['_headers'] as $name => $values) {
+            foreach ($values as $value) {
+                $options[CURLOPT_HTTPHEADER][] = "$name: $value";
+            }
+        }
+
+        // Remove the Accept header if one was not set
+        if (!Core::hasHeader($request, 'Accept')) {
+            $options[CURLOPT_HTTPHEADER][] = 'Accept:';
+        }
+    }
+
     /**
-     * This function ensures that a response was set on a transaction. If one
-     * was not set, then the request is retried if possible. This error
-     * typically means you are sending a payload, curl encountered a
-     * "Connection died, retrying a fresh connect" error, tried to rewind the
-     * stream, and then encountered a "necessary data rewind wasn't possible"
-     * error, causing the request to be sent through curl_multi_info_read()
-     * without an error status.
+     * Takes an array of curl options specified in the 'curl' option of a
+     * request's configuration array and maps them to CURLOPT_* options.
+     *
+     * This method is only called when a  request has a 'curl' config setting.
+     *
+     * @param array $config Configuration array of custom curl option
+     * @param array $options Array of existing curl options
+     *
+     * @return array Returns a new array of curl options
      */
-    private static function retryFailedRewind(
-        callable $handler,
-        array $request,
-        array $response
-    ) {
-        // If there is no body, then there is some other kind of issue. This
-        // is weird and should probably never happen.
-        if (!isset($request['body'])) {
-            $response['err_message'] = 'No response was received for a request '
-                . 'with no body. This could mean that you are saturating your '
-                . 'network.';
-            return self::createErrorResponse($handler, $request, $response);
+    private function applyCustomCurlOptions(array $config, array $options)
+    {
+        $curlOptions = [];
+        foreach ($config as $key => $value) {
+            if (is_int($key)) {
+                $curlOptions[$key] = $value;
+            }
         }
 
-        if (!Core::rewindBody($request)) {
-            $response['err_message'] = 'The connection unexpectedly failed '
-                . 'without providing an error. The request would have been '
-                . 'retried, but attempting to rewind the request body failed.';
-            return self::createErrorResponse($handler, $request, $response);
+        return $curlOptions + $options;
+    }
+
+    private function getOutputBody(array $request, array &$options)
+    {
+        // Determine where the body of the response (if any) will be streamed.
+        if (isset($options[CURLOPT_WRITEFUNCTION])) {
+            return $request['client']['save_to'];
         }
 
-        // Retry no more than 3 times before giving up.
-        if (!isset($request['curl']['retries'])) {
-            $request['curl']['retries'] = 1;
-        } elseif ($request['curl']['retries'] == 2) {
-            $response['err_message'] = 'The cURL request was retried 3 times '
-                . 'and did no succeed. cURL was unable to rewind the body of '
-                . 'the request and subsequent retries resulted in the same '
-                . 'error. Turn on the debug option to see what went wrong. '
-                . 'See https://bugs.php.net/bug.php?id=47204 for more information.';
-            return self::createErrorResponse($handler, $request, $response);
-        } else {
-            $request['curl']['retries']++;
+        if (isset($options[CURLOPT_FILE])) {
+            return $options[CURLOPT_FILE];
         }
 
-        return $handler($request);
+        if ($request['http_method'] != 'HEAD') {
+            // Create a default body if one was not provided
+            return $options[CURLOPT_FILE] = fopen('php://temp', 'w+');
+        }
+
+        return null;
     }
 }

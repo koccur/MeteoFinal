@@ -43,6 +43,16 @@ class CancellationQueueTest extends TestCase
         $cancellationQueue();
     }
 
+    private function getCancellableDeferred()
+    {
+        $mock = $this->createCallableMock();
+        $mock
+            ->expects($this->once())
+            ->method('__invoke');
+
+        return new Deferred($mock);
+    }
+
     /** @test */
     public function callsCancelOnPromisesEnqueuedAfterStart()
     {
@@ -84,15 +94,5 @@ class CancellationQueueTest extends TestCase
         $cancellationQueue->enqueue($mock);
 
         $cancellationQueue();
-    }
-
-    private function getCancellableDeferred()
-    {
-        $mock = $this->createCallableMock();
-        $mock
-            ->expects($this->once())
-            ->method('__invoke');
-
-        return new Deferred($mock);
     }
 }

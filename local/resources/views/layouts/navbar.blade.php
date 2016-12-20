@@ -23,13 +23,14 @@
 		<span id="menu">
 			<li><a href="{{URL::to('/')}}">Strona Główna</a></li>
 {{--			<li><a href="{{URL::to('/users')}}">Użytkownicy</a></li>--}}
-			<li><a href="{{URL::to('/articles')}}">Wiadomości</a></li>
+            <li><a href="{{URL::to('/articles')}}">Artykuły</a></li>
 			<li><a href="{{URL::to('/about')}}">O nas</a></li>
 {{--            <li><a href="{{URL::to('/images')}}">Rysunki</a></li>--}}
             <li><a href="{{URL::to('/forecast')}}">Pogoda</a></li>
 
             @if (Auth::guest())
-                <li style="float:right"><a href="{{URL::to('/login')}}">Zaloguj</a></li>
+                <li style="float:right">
+                    <a href="{{URL::to('/login')}}">Zaloguj</a></li>
             @else
                     <li style="float:right">
                  <a href="{{URL::to('/users',Auth::user()->id)}}">Witaj {{Auth::user()->username}}!</a>

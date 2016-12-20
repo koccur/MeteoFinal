@@ -24,22 +24,6 @@ class Emitter implements EmitterInterface
     /** @var array */
     private $sorted = [];
 
-    public function on($eventName, callable $listener, $priority = 0)
-    {
-        if ($priority === 'first') {
-            $priority = isset($this->listeners[$eventName])
-                ? max(array_keys($this->listeners[$eventName])) + 1
-                : 1;
-        } elseif ($priority === 'last') {
-            $priority = isset($this->listeners[$eventName])
-                ? min(array_keys($this->listeners[$eventName])) - 1
-                : -1;
-        }
-
-        $this->listeners[$eventName][$priority][] = $listener;
-        unset($this->sorted[$eventName]);
-    }
-
     public function once($eventName, callable $listener, $priority = 0)
     {
         $onceListener = function (
@@ -69,6 +53,41 @@ class Emitter implements EmitterInterface
         }
     }
 
+    public function on($eventName, callable $listener, $priority = 0)
+    {
+        if ($priority === 'first') {
+            $priority = isset($this->listeners[$eventName])
+                ? max(array_keys($this->listeners[$eventName])) + 1
+                : 1;
+        } elseif ($priority === 'last') {
+            $priority = isset($this->listeners[$eventName])
+                ? min(array_keys($this->listeners[$eventName])) - 1
+                : -1;
+        }
+
+        $this->listeners[$eventName][$priority][] = $listener;
+        unset($this->sorted[$eventName]);
+    }
+
+    public function hasListeners($eventName)
+    {
+        return !empty($this->listeners[$eventName]);
+    }
+
+    public function emit($eventName, EventInterface $event)
+    {
+        if (isset($this->listeners[$eventName])) {
+            foreach ($this->listeners($eventName) as $listener) {
+                $listener($event, $eventName);
+                if ($event->isPropagationStopped()) {
+                    break;
+                }
+            }
+        }
+
+        return $event;
+    }
+
     public function listeners($eventName = null)
     {
         // Return all events in a sorted priority order
@@ -95,25 +114,6 @@ class Emitter implements EmitterInterface
         }
 
         return $this->sorted[$eventName];
-    }
-
-    public function hasListeners($eventName)
-    {
-        return !empty($this->listeners[$eventName]);
-    }
-
-    public function emit($eventName, EventInterface $event)
-    {
-        if (isset($this->listeners[$eventName])) {
-            foreach ($this->listeners($eventName) as $listener) {
-                $listener($event, $eventName);
-                if ($event->isPropagationStopped()) {
-                    break;
-                }
-            }
-        }
-
-        return $event;
     }
 
     public function attach(SubscriberInterface $subscriber)

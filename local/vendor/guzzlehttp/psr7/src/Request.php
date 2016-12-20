@@ -63,6 +63,18 @@ class Request implements RequestInterface
         }
     }
 
+    private function updateHostFromUri($host)
+    {
+        // Ensure Host is the first header.
+        // See: http://tools.ietf.org/html/rfc7230#section-5.4
+        if ($port = $this->uri->getPort()) {
+            $host .= ':' . $port;
+        }
+
+        $this->headerLines = ['Host' => [$host]] + $this->headerLines;
+        $this->headers = ['host' => [$host]] + $this->headers;
+    }
+
     public function getRequestTarget()
     {
         if ($this->requestTarget !== null) {
@@ -133,17 +145,5 @@ class Request implements RequestInterface
         /** @var Request $newInstance */
         $newInstance = $this->withParentHeader($header, $value);
         return $newInstance;
-    }
-
-    private function updateHostFromUri($host)
-    {
-        // Ensure Host is the first header.
-        // See: http://tools.ietf.org/html/rfc7230#section-5.4
-        if ($port = $this->uri->getPort()) {
-            $host .= ':' . $port;
-        }
-
-        $this->headerLines = ['Host' => [$host]] + $this->headerLines;
-        $this->headers = ['host' => [$host]] + $this->headers;
     }
 }

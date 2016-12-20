@@ -8,27 +8,6 @@ class PromiseTest extends TestCase
 {
     use PromiseTest\FullTestTrait;
 
-    public function getPromiseTestAdapter(callable $canceller = null)
-    {
-        $resolveCallback = $rejectCallback = $progressCallback = null;
-
-        $promise = new Promise(function ($resolve, $reject, $progress) use (&$resolveCallback, &$rejectCallback, &$progressCallback) {
-            $resolveCallback  = $resolve;
-            $rejectCallback   = $reject;
-            $progressCallback = $progress;
-        }, $canceller);
-
-        return new CallbackPromiseAdapter([
-            'promise' => function () use ($promise) {
-                return $promise;
-            },
-            'resolve' => $resolveCallback,
-            'reject'  => $rejectCallback,
-            'notify'  => $progressCallback,
-            'settle'  => $resolveCallback,
-        ]);
-    }
-
     /** @test */
     public function shouldRejectIfResolverThrowsException()
     {
@@ -63,6 +42,27 @@ class PromiseTest extends TestCase
             ->then($mock);
 
         $adapter->resolve(new SimpleFulfilledTestPromise());
+    }
+
+    public function getPromiseTestAdapter(callable $canceller = null)
+    {
+        $resolveCallback = $rejectCallback = $progressCallback = null;
+
+        $promise = new Promise(function ($resolve, $reject, $progress) use (&$resolveCallback, &$rejectCallback, &$progressCallback) {
+            $resolveCallback  = $resolve;
+            $rejectCallback   = $reject;
+            $progressCallback = $progress;
+        }, $canceller);
+
+        return new CallbackPromiseAdapter([
+            'promise' => function () use ($promise) {
+                return $promise;
+            },
+            'resolve' => $resolveCallback,
+            'reject'  => $rejectCallback,
+            'notify'  => $progressCallback,
+            'settle'  => $resolveCallback,
+        ]);
     }
 
     /** @test */

@@ -33,6 +33,31 @@ class Server
         self::send('DELETE', '/guzzle-server/requests');
     }
 
+    private static function send(
+        $method,
+        $path,
+        $body = null,
+        array $client = []
+    )
+    {
+        $handler = new StreamHandler();
+
+        $request = [
+            'http_method' => $method,
+            'uri' => $path,
+            'request_port' => 8125,
+            'headers' => ['host' => ['127.0.0.1:8125']],
+            'body' => $body,
+            'client' => $client,
+        ];
+
+        if ($body) {
+            $request['headers']['content-length'] = [strlen($body)];
+        }
+
+        return $handler($request);
+    }
+
     /**
      * Queue an array of responses or a single response on the server.
      *
@@ -118,18 +143,6 @@ class Server
         self::$started = false;
     }
 
-    public static function wait($maxTries = 20)
-    {
-        $tries = 0;
-        while (!self::isListening() && ++$tries < $maxTries) {
-            usleep(100000);
-        }
-
-        if (!self::isListening()) {
-            throw new \RuntimeException('Unable to contact node.js server');
-        }
-    }
-
     public static function start()
     {
         if (self::$started) {
@@ -147,6 +160,18 @@ class Server
         self::$started = true;
     }
 
+    public static function wait($maxTries = 20)
+    {
+        $tries = 0;
+        while (!self::isListening() && ++$tries < $maxTries) {
+            usleep(100000);
+        }
+
+        if (!self::isListening()) {
+            throw new \RuntimeException('Unable to contact node.js server');
+        }
+    }
+
     private static function isListening()
     {
         $response = self::send('GET', '/guzzle-server/perf', null, [
@@ -155,29 +180,5 @@ class Server
         ]);
 
         return !isset($response['error']);
-    }
-
-    private static function send(
-        $method,
-        $path,
-        $body = null,
-        array $client = []
-    ) {
-        $handler = new StreamHandler();
-
-        $request = [
-            'http_method'  => $method,
-            'uri'          => $path,
-            'request_port' => 8125,
-            'headers'      => ['host' => ['127.0.0.1:8125']],
-            'body'         => $body,
-            'client'       => $client,
-        ];
-
-        if ($body) {
-            $request['headers']['content-length'] = [strlen($body)];
-        }
-
-        return $handler($request);
     }
 }

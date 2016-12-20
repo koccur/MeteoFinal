@@ -4,20 +4,6 @@ namespace React\Promise;
 
 class FunctionMapTest extends TestCase
 {
-    protected function mapper()
-    {
-        return function ($val) {
-            return $val * 2;
-        };
-    }
-
-    protected function promiseMapper()
-    {
-        return function ($val) {
-            return resolve($val * 2);
-        };
-    }
-
     /** @test */
     public function shouldMapInputValuesArray()
     {
@@ -31,6 +17,13 @@ class FunctionMapTest extends TestCase
             [1, 2, 3],
             $this->mapper()
         )->then($mock);
+    }
+
+    protected function mapper()
+    {
+        return function ($val) {
+            return $val * 2;
+        };
     }
 
     /** @test */
@@ -76,6 +69,13 @@ class FunctionMapTest extends TestCase
             [1, 2, 3],
             $this->promiseMapper()
         )->then($mock);
+    }
+
+    protected function promiseMapper()
+    {
+        return function ($val) {
+            return resolve($val * 2);
+        };
     }
 
     /** @test */

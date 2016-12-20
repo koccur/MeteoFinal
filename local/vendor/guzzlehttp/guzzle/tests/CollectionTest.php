@@ -9,11 +9,6 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     /** @var Collection */
     protected $coll;
 
-    protected function setUp()
-    {
-        $this->coll = new Collection();
-    }
-
     public function testConstructorCanBeCalledWithNoParams()
     {
         $this->coll = new Collection();
@@ -412,5 +407,10 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
         $c->setPath('foo/bar/[]', 'a');
         $c->setPath('foo/bar/[]', 'b');
         $this->assertEquals(['a', 'b'], $c['foo']['bar']);
+    }
+
+    protected function setUp()
+    {
+        $this->coll = new Collection();
     }
 }

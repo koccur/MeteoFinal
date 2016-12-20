@@ -5,7 +5,6 @@
 <div id="main-container">
 	<header class="main-header">
 		<div class="header-content">
-			@include('layouts.header')
 			@include('layouts.navbar')
 		</div>
 	</header>
@@ -15,13 +14,16 @@
 				<div class="col-sm-12 actual-weather-bar">
 					<div class="contents">
 					@include('layouts.weather')
-            			<a class="cols col-xs-12 col-md-6" href="{{URL::to('/forecast#godzinowa')}}">
+                        <div class="clearfix"></div>
+                        <div class="pogodowe">
+                            <a id="hourly" href="{{URL::to('/forecast#godzinowa')}}">
 							<button type="button" style="width:100%;" class="btn btn-success">Pogoda Godzinowa</button></a>
-            			<a class="cols col-xs-12 col-md-6" href="{{URL::to('/forecast#tygodniowa')}}">
+                            <a id="daily" href="{{URL::to('/forecast#tygodniowa')}}">
 							<button type="button" style="width:100%;" class="btn btn-success">Pogoda Tygodniowa</button></a>
 
 							<div class="clearfix"></div>
 
+                        </div>
 
 					</div>
 				</div>

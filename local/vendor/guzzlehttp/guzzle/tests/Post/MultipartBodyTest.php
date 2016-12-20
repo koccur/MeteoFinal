@@ -9,13 +9,6 @@ use GuzzleHttp\Post\PostFile;
  */
 class MultipartBodyTest extends \PHPUnit_Framework_TestCase
 {
-    protected function getTestBody()
-    {
-        return new MultipartBody(['foo' => 'bar'], [
-            new PostFile('foo', 'abc', 'foo.txt')
-        ], 'abcdef');
-    }
-
     public function testConstructorAddsFieldsAndFiles()
     {
         $b = $this->getTestBody();
@@ -24,6 +17,13 @@ class MultipartBodyTest extends \PHPUnit_Framework_TestCase
         $this->assertContains("--abcdef\r\nContent-Disposition: form-data; name=\"foo\"\r\n\r\nbar\r\n", $c);
         $this->assertContains("--abcdef\r\nContent-Disposition: form-data; name=\"foo\"; filename=\"foo.txt\"\r\n"
             . "Content-Type: text/plain\r\n\r\nabc\r\n--abcdef--", $c);
+    }
+
+    protected function getTestBody()
+    {
+        return new MultipartBody(['foo' => 'bar'], [
+            new PostFile('foo', 'abc', 'foo.txt')
+        ], 'abcdef');
     }
 
     public function testDoesNotModifyFieldFormat()

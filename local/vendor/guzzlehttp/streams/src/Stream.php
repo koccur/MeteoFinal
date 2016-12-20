@@ -6,14 +6,6 @@ namespace GuzzleHttp\Stream;
  */
 class Stream implements StreamInterface
 {
-    private $stream;
-    private $size;
-    private $seekable;
-    private $readable;
-    private $writable;
-    private $uri;
-    private $customMetadata;
-
     /** @var array Hash of readable and writable stream types */
     private static $readWriteHash = [
         'read' => [
@@ -29,6 +21,69 @@ class Stream implements StreamInterface
             'x+t' => true, 'c+t' => true, 'a' => true, 'a+' => true
         ]
     ];
+    private $stream;
+    private $size;
+    private $seekable;
+    private $readable;
+    private $writable;
+    private $uri;
+    private $customMetadata;
+
+    /**
+     * This constructor accepts an associative array of options.
+     *
+     * - size: (int) If a read stream would otherwise have an indeterminate
+     *   size, but the size is known due to foreknownledge, then you can
+     *   provide that size, in bytes.
+     * - metadata: (array) Any additional metadata to return when the metadata
+     *   of the stream is accessed.
+     *
+     * @param resource $stream  Stream resource to wrap.
+     * @param array    $options Associative array of options.
+     *
+     * @throws \InvalidArgumentException if the stream is not a stream resource
+     */
+    public function __construct($stream, $options = [])
+    {
+        if (!is_resource($stream)) {
+            throw new \InvalidArgumentException('Stream must be a resource');
+        }
+
+        if (isset($options['size'])) {
+            $this->size = $options['size'];
+        }
+
+        $this->customMetadata = isset($options['metadata'])
+            ? $options['metadata']
+            : [];
+
+        $this->attach($stream);
+    }
+
+    public function attach($stream)
+    {
+        $this->stream = $stream;
+        $meta = stream_get_meta_data($this->stream);
+        $this->seekable = $meta['seekable'];
+        $this->readable = isset(self::$readWriteHash['read'][$meta['mode']]);
+        $this->writable = isset(self::$readWriteHash['write'][$meta['mode']]);
+        $this->uri = $this->getMetadata('uri');
+    }
+
+    public function getMetadata($key = null)
+    {
+        if (!$this->stream) {
+            return $key ? null : [];
+        } elseif (!$key) {
+            return $this->customMetadata + stream_get_meta_data($this->stream);
+        } elseif (isset($this->customMetadata[$key])) {
+            return $this->customMetadata[$key];
+        }
+
+        $meta = stream_get_meta_data($this->stream);
+
+        return isset($meta[$key]) ? $meta[$key] : null;
+    }
 
     /**
      * Create a new stream based on the input type.
@@ -86,58 +141,11 @@ class Stream implements StreamInterface
     }
 
     /**
-     * This constructor accepts an associative array of options.
-     *
-     * - size: (int) If a read stream would otherwise have an indeterminate
-     *   size, but the size is known due to foreknownledge, then you can
-     *   provide that size, in bytes.
-     * - metadata: (array) Any additional metadata to return when the metadata
-     *   of the stream is accessed.
-     *
-     * @param resource $stream  Stream resource to wrap.
-     * @param array    $options Associative array of options.
-     *
-     * @throws \InvalidArgumentException if the stream is not a stream resource
-     */
-    public function __construct($stream, $options = [])
-    {
-        if (!is_resource($stream)) {
-            throw new \InvalidArgumentException('Stream must be a resource');
-        }
-
-        if (isset($options['size'])) {
-            $this->size = $options['size'];
-        }
-
-        $this->customMetadata = isset($options['metadata'])
-            ? $options['metadata']
-            : [];
-
-        $this->attach($stream);
-    }
-
-    /**
      * Closes the stream when the destructed
      */
     public function __destruct()
     {
         $this->close();
-    }
-
-    public function __toString()
-    {
-        if (!$this->stream) {
-            return '';
-        }
-
-        $this->seek(0);
-
-        return (string) stream_get_contents($this->stream);
-    }
-
-    public function getContents()
-    {
-        return $this->stream ? stream_get_contents($this->stream) : '';
     }
 
     public function close()
@@ -158,14 +166,27 @@ class Stream implements StreamInterface
         return $result;
     }
 
-    public function attach($stream)
+    public function __toString()
     {
-        $this->stream = $stream;
-        $meta = stream_get_meta_data($this->stream);
-        $this->seekable = $meta['seekable'];
-        $this->readable = isset(self::$readWriteHash['read'][$meta['mode']]);
-        $this->writable = isset(self::$readWriteHash['write'][$meta['mode']]);
-        $this->uri = $this->getMetadata('uri');
+        if (!$this->stream) {
+            return '';
+        }
+
+        $this->seek(0);
+
+        return (string) stream_get_contents($this->stream);
+    }
+
+    public function seek($offset, $whence = SEEK_SET)
+    {
+        return $this->seekable
+            ? fseek($this->stream, $offset, $whence) === 0
+            : false;
+    }
+
+    public function getContents()
+    {
+        return $this->stream ? stream_get_contents($this->stream) : '';
     }
 
     public function getSize()
@@ -190,6 +211,13 @@ class Stream implements StreamInterface
         }
 
         return null;
+    }
+
+    public function setSize($size)
+    {
+        $this->size = $size;
+
+        return $this;
     }
 
     public function isReadable()
@@ -217,20 +245,6 @@ class Stream implements StreamInterface
         return $this->stream ? ftell($this->stream) : false;
     }
 
-    public function setSize($size)
-    {
-        $this->size = $size;
-
-        return $this;
-    }
-
-    public function seek($offset, $whence = SEEK_SET)
-    {
-        return $this->seekable
-            ? fseek($this->stream, $offset, $whence) === 0
-            : false;
-    }
-
     public function read($length)
     {
         return $this->readable ? fread($this->stream, $length) : false;
@@ -242,20 +256,5 @@ class Stream implements StreamInterface
         $this->size = null;
 
         return $this->writable ? fwrite($this->stream, $string) : false;
-    }
-
-    public function getMetadata($key = null)
-    {
-        if (!$this->stream) {
-            return $key ? null : [];
-        } elseif (!$key) {
-            return $this->customMetadata + stream_get_meta_data($this->stream);
-        } elseif (isset($this->customMetadata[$key])) {
-            return $this->customMetadata[$key];
-        }
-
-        $meta = stream_get_meta_data($this->stream);
-
-        return isset($meta[$key]) ? $meta[$key] : null;
     }
 }

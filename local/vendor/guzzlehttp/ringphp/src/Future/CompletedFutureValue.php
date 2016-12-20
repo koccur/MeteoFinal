@@ -36,6 +36,15 @@ class CompletedFutureValue implements FutureInterface
 
     public function cancel() {}
 
+    public function then(
+        callable $onFulfilled = null,
+        callable $onRejected = null,
+        callable $onProgress = null
+    )
+    {
+        return $this->promise()->then($onFulfilled, $onRejected, $onProgress);
+    }
+
     public function promise()
     {
         if (!$this->cachedPromise) {
@@ -45,13 +54,5 @@ class CompletedFutureValue implements FutureInterface
         }
 
         return $this->cachedPromise;
-    }
-
-    public function then(
-        callable $onFulfilled = null,
-        callable $onRejected = null,
-        callable $onProgress = null
-    ) {
-        return $this->promise()->then($onFulfilled, $onRejected, $onProgress);
     }
 }

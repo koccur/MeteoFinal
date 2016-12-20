@@ -5,18 +5,6 @@ use GuzzleHttp\Ring\Client\CurlHandler;
 
 class CurlHandlerTest extends \PHPUnit_Framework_TestCase
 {
-    protected function setUp()
-    {
-        if (!function_exists('curl_reset')) {
-            $this->markTestSkipped('curl_reset() is not available');
-        }
-    }
-
-    protected function getHandler($factory = null, $options = [])
-    {
-        return new CurlHandler($options);
-    }
-
     public function testCanSetMaxHandles()
     {
         $a = new CurlHandler(['max_handles' => 10]);
@@ -92,5 +80,17 @@ class CurlHandlerTest extends \PHPUnit_Framework_TestCase
         ];
         $a($request);
         $a($request);
+    }
+
+    protected function setUp()
+    {
+        if (!function_exists('curl_reset')) {
+            $this->markTestSkipped('curl_reset() is not available');
+        }
+    }
+
+    protected function getHandler($factory = null, $options = [])
+    {
+        return new CurlHandler($options);
     }
 }

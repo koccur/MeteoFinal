@@ -4908,8 +4908,8 @@ ul.pagination {
       width: 100%;
       background-color: #2ecc71; }
     .master-container .recent-articles .articles {
-      padding: 20px 10px;
-      border-bottom: 1px dotted white; }
+        padding: 20px 10px;
+    }
       .master-container .recent-articles .articles .media p {
         width: 100%;
         font-weight:300;
@@ -4950,7 +4950,6 @@ footer {
   color: #ecf0f1 !important;
   background-color: #2ecc71; }
   footer #copy {
-    position: relative;
     top: 5px;
     font-size: 18px;
     margin: 10px; }
@@ -5141,8 +5140,39 @@ table table th .tableInfo {
 }
 
 tbody tr td{
-  background-color: #a0a6ad;
+    background-color: rgba(215, 215, 215, 0.6);
 }
-tbody tr:nth-child(odd) td{
-  background-color: rgba(62, 59, 63, 0.53);
+
+tbody tr td:nth-child(1n+2) {
+    border-left: 2px solid white;
+    border-bottom: 1px solid white;
+}
+
+.pogodowe {
+    width: 100%;
+}
+
+#hourly {
+    float: left;
+    width: 48.4%;
+}
+
+#daily {
+    float: right;
+    width: 48.4%;
+}
+
+.weatherInfo {
+    display: inline-block;
+    margin: 10px;
+    width: 33%;
+    margin-left: 12%;
+}
+
+.timeHourly {
+    background-color: rgba(34, 124, 174, 0.98);
+}
+
+.timeDaily {
+    background-color: rgba(34, 124, 174, 0.98);
 }

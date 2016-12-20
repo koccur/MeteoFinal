@@ -82,27 +82,6 @@ class UploadedFile implements UploadedFileInterface
     }
 
     /**
-     * Depending on the value set file or stream variable
-     *
-     * @param mixed $streamOrFile
-     * @throws InvalidArgumentException
-     */
-    private function setStreamOrFile($streamOrFile)
-    {
-        if (is_string($streamOrFile)) {
-            $this->file = $streamOrFile;
-        } elseif (is_resource($streamOrFile)) {
-            $this->stream = new Stream($streamOrFile);
-        } elseif ($streamOrFile instanceof StreamInterface) {
-            $this->stream = $streamOrFile;
-        } else {
-            throw new InvalidArgumentException(
-                'Invalid stream or file provided for UploadedFile'
-            );
-        }
-    }
-
-    /**
      * @param int $error
      * @throws InvalidArgumentException
      */
@@ -139,24 +118,6 @@ class UploadedFile implements UploadedFileInterface
     }
 
     /**
-     * @param mixed $param
-     * @return boolean
-     */
-    private function isStringOrNull($param)
-    {
-        return in_array(gettype($param), ['string', 'NULL']);
-    }
-
-    /**
-     * @param mixed $param
-     * @return boolean
-     */
-    private function isStringNotEmpty($param)
-    {
-        return is_string($param) && false === empty($param);
-    }
-
-    /**
      * @param string|null $clientFilename
      * @throws InvalidArgumentException
      */
@@ -169,6 +130,15 @@ class UploadedFile implements UploadedFileInterface
         }
 
         $this->clientFilename = $clientFilename;
+    }
+
+    /**
+     * @param mixed $param
+     * @return boolean
+     */
+    private function isStringOrNull($param)
+    {
+        return in_array(gettype($param), ['string', 'NULL']);
     }
 
     /**
@@ -197,40 +167,24 @@ class UploadedFile implements UploadedFileInterface
     }
 
     /**
-     * @return boolean
+     * Depending on the value set file or stream variable
+     *
+     * @param mixed $streamOrFile
+     * @throws InvalidArgumentException
      */
-    public function isMoved()
+    private function setStreamOrFile($streamOrFile)
     {
-        return $this->moved;
-    }
-
-    /**
-     * @throws RuntimeException if is moved or not ok
-     */
-    private function validateActive()
-    {
-        if (false === $this->isOk()) {
-            throw new RuntimeException('Cannot retrieve stream due to upload error');
+        if (is_string($streamOrFile)) {
+            $this->file = $streamOrFile;
+        } elseif (is_resource($streamOrFile)) {
+            $this->stream = new Stream($streamOrFile);
+        } elseif ($streamOrFile instanceof StreamInterface) {
+            $this->stream = $streamOrFile;
+        } else {
+            throw new InvalidArgumentException(
+                'Invalid stream or file provided for UploadedFile'
+            );
         }
-
-        if ($this->isMoved()) {
-            throw new RuntimeException('Cannot retrieve stream after it has already been moved');
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     * @throws RuntimeException if the upload was not successful.
-     */
-    public function getStream()
-    {
-        $this->validateActive();
-
-        if ($this->stream instanceof StreamInterface) {
-            return $this->stream;
-        }
-
-        return new LazyOpenStream($this->file, 'r+');
     }
 
     /**
@@ -272,6 +226,52 @@ class UploadedFile implements UploadedFileInterface
                 sprintf('Uploaded file could not be moved to %s', $targetPath)
             );
         }
+    }
+
+    /**
+     * @throws RuntimeException if is moved or not ok
+     */
+    private function validateActive()
+    {
+        if (false === $this->isOk()) {
+            throw new RuntimeException('Cannot retrieve stream due to upload error');
+        }
+
+        if ($this->isMoved()) {
+            throw new RuntimeException('Cannot retrieve stream after it has already been moved');
+        }
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isMoved()
+    {
+        return $this->moved;
+    }
+
+    /**
+     * @param mixed $param
+     * @return boolean
+     */
+    private function isStringNotEmpty($param)
+    {
+        return is_string($param) && false === empty($param);
+    }
+
+    /**
+     * {@inheritdoc}
+     * @throws RuntimeException if the upload was not successful.
+     */
+    public function getStream()
+    {
+        $this->validateActive();
+
+        if ($this->stream instanceof StreamInterface) {
+            return $this->stream;
+        }
+
+        return new LazyOpenStream($this->file, 'r+');
     }
 
     /**

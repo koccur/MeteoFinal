@@ -54,6 +54,26 @@ class History implements SubscriberInterface, \IteratorAggregate, \Countable
         $this->add($event->getRequest(), $event->getResponse());
     }
 
+    /**
+     * Add a request to the history
+     *
+     * @param RequestInterface  $request  Request to add
+     * @param ResponseInterface $response Response of the request
+     */
+    private function add(
+        RequestInterface $request,
+        ResponseInterface $response = null
+    ) {
+        $this->transactions[] = [
+            'request'      => $request,
+            'sent_request' => clone $request,
+            'response'     => $response
+        ];
+        if (count($this->transactions) > $this->limit) {
+            array_shift($this->transactions);
+        }
+    }
+
     public function onError(ErrorEvent $event)
     {
         // Only track when no response is present, meaning this didn't ever
@@ -148,25 +168,5 @@ class History implements SubscriberInterface, \IteratorAggregate, \Countable
     public function clear()
     {
         $this->transactions = array();
-    }
-
-    /**
-     * Add a request to the history
-     *
-     * @param RequestInterface  $request  Request to add
-     * @param ResponseInterface $response Response of the request
-     */
-    private function add(
-        RequestInterface $request,
-        ResponseInterface $response = null
-    ) {
-        $this->transactions[] = [
-            'request'      => $request,
-            'sent_request' => clone $request,
-            'response'     => $response
-        ];
-        if (count($this->transactions) > $this->limit) {
-            array_shift($this->transactions);
-        }
     }
 }

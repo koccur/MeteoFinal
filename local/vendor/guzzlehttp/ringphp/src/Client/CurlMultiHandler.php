@@ -76,39 +76,6 @@ class CurlMultiHandler
         }
     }
 
-    public function __invoke(array $request)
-    {
-        $factory = $this->factory;
-        $result = $factory($request);
-        $entry = [
-            'request'  => $request,
-            'response' => [],
-            'handle'   => $result[0],
-            'headers'  => &$result[1],
-            'body'     => $result[2],
-            'deferred' => new Deferred(),
-        ];
-
-        $id = (int) $result[0];
-
-        $future = new FutureArray(
-            $entry['deferred']->promise(),
-            [$this, 'execute'],
-            function () use ($id) {
-                return $this->cancel($id);
-            }
-        );
-
-        $this->addRequest($entry);
-
-        // Transfer outstanding requests if there are too many open handles.
-        if (count($this->handles) >= $this->maxHandles) {
-            $this->execute();
-        }
-
-        return $future;
-    }
-
     /**
      * Runs until all outstanding connections have completed.
      */
@@ -141,63 +108,6 @@ class CurlMultiHandler
             }
 
         } while ($this->active || $this->handles);
-    }
-
-    private function addRequest(array &$entry)
-    {
-        $id = (int) $entry['handle'];
-        $this->handles[$id] = $entry;
-
-        // If the request is a delay, then add the reques to the curl multi
-        // pool only after the specified delay.
-        if (isset($entry['request']['client']['delay'])) {
-            $this->delays[$id] = microtime(true) + ($entry['request']['client']['delay'] / 1000);
-        } elseif (empty($entry['request']['future'])) {
-            curl_multi_add_handle($this->_mh, $entry['handle']);
-        } else {
-            curl_multi_add_handle($this->_mh, $entry['handle']);
-            // "lazy" futures are only sent once the pool has many requests.
-            if ($entry['request']['future'] !== 'lazy') {
-                do {
-                    $mrc = curl_multi_exec($this->_mh, $this->active);
-                } while ($mrc === CURLM_CALL_MULTI_PERFORM);
-                $this->processMessages();
-            }
-        }
-    }
-
-    private function removeProcessed($id)
-    {
-        if (isset($this->handles[$id])) {
-            curl_multi_remove_handle(
-                $this->_mh,
-                $this->handles[$id]['handle']
-            );
-            curl_close($this->handles[$id]['handle']);
-            unset($this->handles[$id], $this->delays[$id]);
-        }
-    }
-
-    /**
-     * Cancels a handle from sending and removes references to it.
-     *
-     * @param int $id Handle ID to cancel and remove.
-     *
-     * @return bool True on success, false on failure.
-     */
-    private function cancel($id)
-    {
-        // Cannot cancel if it has been processed.
-        if (!isset($this->handles[$id])) {
-            return false;
-        }
-
-        $handle = $this->handles[$id]['handle'];
-        unset($this->delays[$id], $this->handles[$id]);
-        curl_multi_remove_handle($this->_mh, $handle);
-        curl_close($handle);
-
-        return true;
     }
 
     private function addDelays()
@@ -245,6 +155,96 @@ class CurlMultiHandler
 
             $this->removeProcessed($id);
             $entry['deferred']->resolve($result);
+        }
+    }
+
+    private function removeProcessed($id)
+    {
+        if (isset($this->handles[$id])) {
+            curl_multi_remove_handle(
+                $this->_mh,
+                $this->handles[$id]['handle']
+            );
+            curl_close($this->handles[$id]['handle']);
+            unset($this->handles[$id], $this->delays[$id]);
+        }
+    }
+
+    public function __invoke(array $request)
+    {
+        $factory = $this->factory;
+        $result = $factory($request);
+        $entry = [
+            'request'  => $request,
+            'response' => [],
+            'handle'   => $result[0],
+            'headers'  => &$result[1],
+            'body'     => $result[2],
+            'deferred' => new Deferred(),
+        ];
+
+        $id = (int) $result[0];
+
+        $future = new FutureArray(
+            $entry['deferred']->promise(),
+            [$this, 'execute'],
+            function () use ($id) {
+                return $this->cancel($id);
+            }
+        );
+
+        $this->addRequest($entry);
+
+        // Transfer outstanding requests if there are too many open handles.
+        if (count($this->handles) >= $this->maxHandles) {
+            $this->execute();
+        }
+
+        return $future;
+    }
+
+    /**
+     * Cancels a handle from sending and removes references to it.
+     *
+     * @param int $id Handle ID to cancel and remove.
+     *
+     * @return bool True on success, false on failure.
+     */
+    private function cancel($id)
+    {
+        // Cannot cancel if it has been processed.
+        if (!isset($this->handles[$id])) {
+            return false;
+        }
+
+        $handle = $this->handles[$id]['handle'];
+        unset($this->delays[$id], $this->handles[$id]);
+        curl_multi_remove_handle($this->_mh, $handle);
+        curl_close($handle);
+
+        return true;
+    }
+
+    private function addRequest(array &$entry)
+    {
+        $id = (int) $entry['handle'];
+        $this->handles[$id] = $entry;
+
+        // If the request is a delay, then add the reques to the curl multi
+        // pool only after the specified delay.
+        if (isset($entry['request']['client']['delay'])) {
+            $this->delays[$id] = microtime(true) + ($entry['request']['client']['delay'] / 1000);
+        } elseif (empty($entry['request']['future'])) {
+            curl_multi_add_handle($this->_mh, $entry['handle']);
+        } else {
+            curl_multi_add_handle($this->_mh, $entry['handle']);
+            // "lazy" futures are only sent once the pool has many requests.
+            if ($entry['request']['future'] !== 'lazy') {
+                do {
+                    $mrc = curl_multi_exec($this->_mh, $this->active);
+                } while ($mrc === CURLM_CALL_MULTI_PERFORM);
+                $this->processMessages();
+            }
         }
     }
 }

@@ -6,6 +6,14 @@ use GuzzleHttp\Query;
 
 class QueryTest extends \PHPUnit_Framework_TestCase
 {
+    private $encodeData = [
+        't' => [
+            'v1' => ['a', '1'],
+            'v2' => 'b',
+            'v3' => ['v4' => 'c', 'v5' => 'd']
+        ]
+    ];
+
     public function testCanCastToString()
     {
         $q = new Query(['foo' => 'baz', 'bar' => 'bam boozle']);
@@ -77,14 +85,6 @@ class QueryTest extends \PHPUnit_Framework_TestCase
         ));
         $this->assertEquals('foo=0&baz=0&bar&boo=', (string) $query);
     }
-
-    private $encodeData = [
-        't' => [
-            'v1' => ['a', '1'],
-            'v2' => 'b',
-            'v3' => ['v4' => 'c', 'v5' => 'd']
-        ]
-    ];
 
     public function testEncodesDuplicateAggregator()
     {

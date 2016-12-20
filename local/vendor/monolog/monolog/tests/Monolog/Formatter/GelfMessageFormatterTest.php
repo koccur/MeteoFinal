@@ -57,6 +57,11 @@ class GelfMessageFormatterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('mysystem', $message->getHost());
     }
 
+    private function isLegacy()
+    {
+        return interface_exists('\Gelf\IMessagePublisher');
+    }
+
     /**
      * @covers Monolog\Formatter\GelfMessageFormatter::format
      */
@@ -195,10 +200,5 @@ class GelfMessageFormatterTest extends \PHPUnit_Framework_TestCase
 
         $this->assertArrayHasKey('_EXTkey', $message_array);
         $this->assertEquals('pair', $message_array['_EXTkey']);
-    }
-
-    private function isLegacy()
-    {
-        return interface_exists('\Gelf\IMessagePublisher');
     }
 }

@@ -115,6 +115,20 @@ class Response extends AbstractMessage implements ResponseInterface
         }
     }
 
+    /**
+     * Accepts and modifies the options provided to the response in the
+     * constructor.
+     *
+     * @param array $options Options array passed by reference.
+     */
+    protected function handleOptions(array &$options = [])
+    {
+        parent::handleOptions($options);
+        if (isset($options['reason_phrase'])) {
+            $this->reasonPhrase = $options['reason_phrase'];
+        }
+    }
+
     public function getStatusCode()
     {
         return $this->statusCode;
@@ -190,19 +204,5 @@ class Response extends AbstractMessage implements ResponseInterface
     public function setEffectiveUrl($url)
     {
         $this->effectiveUrl = $url;
-    }
-
-    /**
-     * Accepts and modifies the options provided to the response in the
-     * constructor.
-     *
-     * @param array $options Options array passed by reference.
-     */
-    protected function handleOptions(array &$options = [])
-    {
-        parent::handleOptions($options);
-        if (isset($options['reason_phrase'])) {
-            $this->reasonPhrase = $options['reason_phrase'];
-        }
     }
 }

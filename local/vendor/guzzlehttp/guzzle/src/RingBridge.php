@@ -15,6 +15,30 @@ use GuzzleHttp\Exception\RequestException;
 class RingBridge
 {
     /**
+     * Creates a Ring request from a request object AND prepares the callbacks.
+     *
+     * @param Transaction $trans Transaction to update.
+     *
+     * @return array Converted Guzzle Ring request.
+     */
+    public static function prepareRingRequest(Transaction $trans)
+    {
+        // Clear out the transaction state when initiating.
+        $trans->exception = null;
+        $request = self::createRingRequest($trans->request);
+
+        // Emit progress events if any progress listeners are registered.
+        if ($trans->request->getEmitter()->hasListeners('progress')) {
+            $emitter = $trans->request->getEmitter();
+            $request['client']['progress'] = function ($a, $b, $c, $d) use ($trans, $emitter) {
+                $emitter->emit('progress', new ProgressEvent($trans, $a, $b, $c, $d));
+            };
+        }
+
+        return $request;
+    }
+
+    /**
      * Creates a Ring request from a request object.
      *
      * This function does not hook up the "then" and "progress" events that
@@ -44,30 +68,6 @@ class RingBridge
             'query_string' => $qs,
             'future'       => isset($options['future']) ? $options['future'] : false
         ];
-    }
-
-    /**
-     * Creates a Ring request from a request object AND prepares the callbacks.
-     *
-     * @param Transaction $trans Transaction to update.
-     *
-     * @return array Converted Guzzle Ring request.
-     */
-    public static function prepareRingRequest(Transaction $trans)
-    {
-        // Clear out the transaction state when initiating.
-        $trans->exception = null;
-        $request = self::createRingRequest($trans->request);
-
-        // Emit progress events if any progress listeners are registered.
-        if ($trans->request->getEmitter()->hasListeners('progress')) {
-            $emitter = $trans->request->getEmitter();
-            $request['client']['progress'] = function ($a, $b, $c, $d) use ($trans, $emitter) {
-                $emitter->emit('progress', new ProgressEvent($trans, $a, $b, $c, $d));
-            };
-        }
-
-        return $request;
     }
 
     /**
@@ -117,6 +117,25 @@ class RingBridge
     }
 
     /**
+     * Get an exception that can be used when a RingPHP handler does not
+     * populate a response.
+     *
+     * @param RequestInterface $request
+     *
+     * @return RequestException
+     */
+    public static function getNoRingResponseException(RequestInterface $request)
+    {
+        $message = <<<EOT
+Sending the request did not return a response, exception, or populate the
+transaction with a response. This is most likely due to an incorrectly
+implemented RingPHP handler. If you are simply trying to mock responses,
+then it is recommended to use the GuzzleHttp\Ring\Client\MockHandler.
+EOT;
+        return new RequestException($message, $request);
+    }
+
+    /**
      * Creates a Guzzle request object using a ring request array.
      *
      * @param array $request Ring request
@@ -142,24 +161,5 @@ class RingBridge
             isset($request['body']) ? Stream::factory($request['body']) : null,
             $options
         );
-    }
-
-    /**
-     * Get an exception that can be used when a RingPHP handler does not
-     * populate a response.
-     *
-     * @param RequestInterface $request
-     *
-     * @return RequestException
-     */
-    public static function getNoRingResponseException(RequestInterface $request)
-    {
-        $message = <<<EOT
-Sending the request did not return a response, exception, or populate the
-transaction with a response. This is most likely due to an incorrectly
-implemented RingPHP handler. If you are simply trying to mock responses,
-then it is recommended to use the GuzzleHttp\Ring\Client\MockHandler.
-EOT;
-        return new RequestException($message, $request);
     }
 }

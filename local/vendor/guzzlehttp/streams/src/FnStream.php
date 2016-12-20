@@ -9,13 +9,12 @@ namespace GuzzleHttp\Stream;
  */
 class FnStream implements StreamInterface
 {
-    /** @var array */
-    private $methods;
-
     /** @var array Methods that must be implemented in the given array */
     private static $slots = ['__toString', 'close', 'detach', 'attach',
         'getSize', 'tell', 'eof', 'isSeekable', 'seek', 'isWritable', 'write',
         'isReadable', 'read', 'getContents', 'getMetadata'];
+    /** @var array */
+    private $methods;
 
     /**
      * @param array $methods Hash of method name to a callable.
@@ -27,26 +26,6 @@ class FnStream implements StreamInterface
         // Create the functions on the class
         foreach ($methods as $name => $fn) {
             $this->{'_fn_' . $name} = $fn;
-        }
-    }
-
-    /**
-     * Lazily determine which methods are not implemented.
-     * @throws \BadMethodCallException
-     */
-    public function __get($name)
-    {
-        throw new \BadMethodCallException(str_replace('_fn_', '', $name)
-            . '() is not implemented in the FnStream');
-    }
-
-    /**
-     * The close method is called on the underlying stream only if possible.
-     */
-    public function __destruct()
-    {
-        if (isset($this->_fn_close)) {
-            call_user_func($this->_fn_close);
         }
     }
 
@@ -68,6 +47,26 @@ class FnStream implements StreamInterface
         }
 
         return new self($methods);
+    }
+
+    /**
+     * Lazily determine which methods are not implemented.
+     * @throws \BadMethodCallException
+     */
+    public function __get($name)
+    {
+        throw new \BadMethodCallException(str_replace('_fn_', '', $name)
+            . '() is not implemented in the FnStream');
+    }
+
+    /**
+     * The close method is called on the underlying stream only if possible.
+     */
+    public function __destruct()
+    {
+        if (isset($this->_fn_close)) {
+            call_user_func($this->_fn_close);
+        }
     }
 
     public function __toString()

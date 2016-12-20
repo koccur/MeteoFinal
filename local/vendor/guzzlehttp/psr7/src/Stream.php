@@ -10,14 +10,6 @@ use Psr\Http\Message\StreamInterface;
  */
 class Stream implements StreamInterface
 {
-    private $stream;
-    private $size;
-    private $seekable;
-    private $readable;
-    private $writable;
-    private $uri;
-    private $customMetadata;
-
     /** @var array Hash of readable and writable stream types */
     private static $readWriteHash = [
         'read' => [
@@ -33,6 +25,13 @@ class Stream implements StreamInterface
             'x+t' => true, 'c+t' => true, 'a' => true, 'a+' => true
         ]
     ];
+    private $stream;
+    private $size;
+    private $seekable;
+    private $readable;
+    private $writable;
+    private $uri;
+    private $customMetadata;
 
     /**
      * This constructor accepts an associative array of options.
@@ -70,6 +69,21 @@ class Stream implements StreamInterface
         $this->uri = $this->getMetadata('uri');
     }
 
+    public function getMetadata($key = null)
+    {
+        if (!isset($this->stream)) {
+            return $key ? null : [];
+        } elseif (!$key) {
+            return $this->customMetadata + stream_get_meta_data($this->stream);
+        } elseif (isset($this->customMetadata[$key])) {
+            return $this->customMetadata[$key];
+        }
+
+        $meta = stream_get_meta_data($this->stream);
+
+        return isset($meta[$key]) ? $meta[$key] : null;
+    }
+
     public function __get($name)
     {
         if ($name == 'stream') {
@@ -85,27 +99,6 @@ class Stream implements StreamInterface
     public function __destruct()
     {
         $this->close();
-    }
-
-    public function __toString()
-    {
-        try {
-            $this->seek(0);
-            return (string) stream_get_contents($this->stream);
-        } catch (\Exception $e) {
-            return '';
-        }
-    }
-
-    public function getContents()
-    {
-        $contents = stream_get_contents($this->stream);
-
-        if ($contents === false) {
-            throw new \RuntimeException('Unable to read stream contents');
-        }
-
-        return $contents;
     }
 
     public function close()
@@ -130,6 +123,37 @@ class Stream implements StreamInterface
         $this->readable = $this->writable = $this->seekable = false;
 
         return $result;
+    }
+
+    public function __toString()
+    {
+        try {
+            $this->seek(0);
+            return (string)stream_get_contents($this->stream);
+        } catch (\Exception $e) {
+            return '';
+        }
+    }
+
+    public function seek($offset, $whence = SEEK_SET)
+    {
+        if (!$this->seekable) {
+            throw new \RuntimeException('Stream is not seekable');
+        } elseif (fseek($this->stream, $offset, $whence) === -1) {
+            throw new \RuntimeException('Unable to seek to stream position '
+                . $offset . ' with whence ' . var_export($whence, true));
+        }
+    }
+
+    public function getContents()
+    {
+        $contents = stream_get_contents($this->stream);
+
+        if ($contents === false) {
+            throw new \RuntimeException('Unable to read stream contents');
+        }
+
+        return $contents;
     }
 
     public function getSize()
@@ -192,16 +216,6 @@ class Stream implements StreamInterface
         $this->seek(0);
     }
 
-    public function seek($offset, $whence = SEEK_SET)
-    {
-        if (!$this->seekable) {
-            throw new \RuntimeException('Stream is not seekable');
-        } elseif (fseek($this->stream, $offset, $whence) === -1) {
-            throw new \RuntimeException('Unable to seek to stream position '
-                . $offset . ' with whence ' . var_export($whence, true));
-        }
-    }
-
     public function read($length)
     {
         if (!$this->readable) {
@@ -226,20 +240,5 @@ class Stream implements StreamInterface
         }
 
         return $result;
-    }
-
-    public function getMetadata($key = null)
-    {
-        if (!isset($this->stream)) {
-            return $key ? null : [];
-        } elseif (!$key) {
-            return $this->customMetadata + stream_get_meta_data($this->stream);
-        } elseif (isset($this->customMetadata[$key])) {
-            return $this->customMetadata[$key];
-        }
-
-        $meta = stream_get_meta_data($this->stream);
-
-        return isset($meta[$key]) ? $meta[$key] : null;
     }
 }

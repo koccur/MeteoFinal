@@ -34,6 +34,22 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Bar', Core::header($sent, 'foo'));
     }
 
+    private function queueRes()
+    {
+        Server::flush();
+        Server::enqueue([
+            [
+                'status' => 200,
+                'reason' => 'OK',
+                'headers' => [
+                    'Foo' => ['Bar'],
+                    'Content-Length' => [8],
+                ],
+                'body' => 'hi there',
+            ],
+        ]);
+    }
+
     public function testAddsErrorToResponse()
     {
         $handler = new StreamHandler();
@@ -220,6 +236,13 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1.0, Server::received()[0]['version']);
     }
 
+    public function testAddsProxy()
+    {
+        $res = $this->getSendResult(['stream' => true, 'proxy' => '127.0.0.1:8125']);
+        $opts = stream_context_get_options($res['body']);
+        $this->assertEquals('127.0.0.1:8125', $opts['http']['proxy']);
+    }
+
     protected function getSendResult(array $opts)
     {
         $this->queueRes();
@@ -231,13 +254,6 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
             'headers'     => ['host' => [Server::$host]],
             'client'      => $opts,
         ]);
-    }
-
-    public function testAddsProxy()
-    {
-        $res = $this->getSendResult(['stream' => true, 'proxy' => '127.0.0.1:8125']);
-        $opts = stream_context_get_options($res['body']);
-        $this->assertEquals('127.0.0.1:8125', $opts['http']['proxy']);
     }
 
     public function testAddsTimeout()
@@ -427,22 +443,6 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $req = Server::received()[0];
         $this->assertEquals('', Core::header($req, 'Content-Type'));
         $this->assertEquals(3, Core::header($req, 'Content-Length'));
-    }
-
-    private function queueRes()
-    {
-        Server::flush();
-        Server::enqueue([
-            [
-                'status' => 200,
-                'reason' => 'OK',
-                'headers' => [
-                    'Foo' => ['Bar'],
-                    'Content-Length' => [8],
-                ],
-                'body' => 'hi there',
-            ],
-        ]);
     }
 
     public function testSupports100Continue()

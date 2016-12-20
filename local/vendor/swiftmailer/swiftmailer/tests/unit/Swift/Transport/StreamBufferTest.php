@@ -14,6 +14,18 @@ class Swift_Transport_StreamBufferTest extends \PHPUnit_Framework_TestCase
         $buffer->setWriteTranslations(array('a' => 'b'));
     }
 
+    private function _createFactory()
+    {
+        return $this->getMock('Swift_ReplacementFilterFactory');
+    }
+
+    // -- Creation methods
+
+    private function _createBuffer($replacementFactory)
+    {
+        return new Swift_Transport_StreamBuffer($replacementFactory);
+    }
+
     public function testOverridingTranslationsOnlyAddsNeededFilters()
     {
         $factory = $this->_createFactory();
@@ -24,18 +36,6 @@ class Swift_Transport_StreamBufferTest extends \PHPUnit_Framework_TestCase
         $buffer = $this->_createBuffer($factory);
         $buffer->setWriteTranslations(array('a' => 'b'));
         $buffer->setWriteTranslations(array('x' => 'y', 'a' => 'b'));
-    }
-
-    // -- Creation methods
-
-    private function _createBuffer($replacementFactory)
-    {
-        return new Swift_Transport_StreamBuffer($replacementFactory);
-    }
-
-    private function _createFactory()
-    {
-        return $this->getMock('Swift_ReplacementFilterFactory');
     }
 
     public function _createFilter()

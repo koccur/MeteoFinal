@@ -41,20 +41,15 @@ trait MessageTrait
         return $this->headerLines;
     }
 
-    public function hasHeader($header)
+    public function getHeaderLine($header)
     {
-        return isset($this->headers[strtolower($header)]);
+        return implode(', ', $this->getHeader($header));
     }
 
     public function getHeader($header)
     {
         $name = strtolower($header);
         return isset($this->headers[$name]) ? $this->headers[$name] : [];
-    }
-
-    public function getHeaderLine($header)
-    {
-        return implode(', ', $this->getHeader($header));
     }
 
     public function withHeader($header, $value)
@@ -95,6 +90,11 @@ trait MessageTrait
         $new->headers[strtolower($header)][] = $value;
         $new->headerLines[$header][] = $value;
         return $new;
+    }
+
+    public function hasHeader($header)
+    {
+        return isset($this->headers[strtolower($header)]);
     }
 
     public function withoutHeader($header)

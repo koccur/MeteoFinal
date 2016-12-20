@@ -52,63 +52,6 @@ class Query extends Collection
     }
 
     /**
-     * Convert the query string parameters to a query string string
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        if (!$this->data) {
-            return '';
-        }
-
-        // The default aggregator is statically cached
-        static $defaultAggregator;
-
-        if (!$this->aggregator) {
-            if (!$defaultAggregator) {
-                $defaultAggregator = self::phpAggregator();
-            }
-            $this->aggregator = $defaultAggregator;
-        }
-
-        $result = '';
-        $aggregator = $this->aggregator;
-        $encoder = $this->encoding;
-
-        foreach ($aggregator($this->data) as $key => $values) {
-            foreach ($values as $value) {
-                if ($result) {
-                    $result .= '&';
-                }
-                $result .= $encoder($key);
-                if ($value !== null) {
-                    $result .= '=' . $encoder($value);
-                }
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Controls how multi-valued query string parameters are aggregated into a
-     * string.
-     *
-     *     $query->setAggregator($query::duplicateAggregator());
-     *
-     * @param callable $aggregator Callable used to convert a deeply nested
-     *     array of query string variables into a flattened array of key value
-     *     pairs. The callable accepts an array of query data and returns a
-     *     flattened array of key value pairs where each value is an array of
-     *     strings.
-     */
-    public function setAggregator(callable $aggregator)
-    {
-        $this->aggregator = $aggregator;
-    }
-
-    /**
      * Specify how values are URL encoded
      *
      * @param string|bool $type One of 'RFC1738', 'RFC3986', or false to disable encoding
@@ -147,6 +90,46 @@ class Query extends Collection
                 return is_int($key) ? $prefix : "{$prefix}[{$key}]";
             });
         };
+    }
+
+    /**
+     * Convert the query string parameters to a query string string
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        if (!$this->data) {
+            return '';
+        }
+
+        // The default aggregator is statically cached
+        static $defaultAggregator;
+
+        if (!$this->aggregator) {
+            if (!$defaultAggregator) {
+                $defaultAggregator = self::phpAggregator();
+            }
+            $this->aggregator = $defaultAggregator;
+        }
+
+        $result = '';
+        $aggregator = $this->aggregator;
+        $encoder = $this->encoding;
+
+        foreach ($aggregator($this->data) as $key => $values) {
+            foreach ($values as $value) {
+                if ($result) {
+                    $result .= '&';
+                }
+                $result .= $encoder($key);
+                if ($value !== null) {
+                    $result .= '=' . $encoder($value);
+                }
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -200,5 +183,22 @@ class Query extends Collection
         }
 
         return $result;
+    }
+
+    /**
+     * Controls how multi-valued query string parameters are aggregated into a
+     * string.
+     *
+     *     $query->setAggregator($query::duplicateAggregator());
+     *
+     * @param callable $aggregator Callable used to convert a deeply nested
+     *     array of query string variables into a flattened array of key value
+     *     pairs. The callable accepts an array of query data and returns a
+     *     flattened array of key value pairs where each value is an array of
+     *     strings.
+     */
+    public function setAggregator(callable $aggregator)
+    {
+        $this->aggregator = $aggregator;
     }
 }

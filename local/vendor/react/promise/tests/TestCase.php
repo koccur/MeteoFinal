@@ -14,6 +14,11 @@ class TestCase extends \PHPUnit_Framework_TestCase
         return $mock;
     }
 
+    public function createCallableMock()
+    {
+        return $this->getMock('React\\Promise\Stub\CallableStub');
+    }
+
     public function expectCallableOnce()
     {
         $mock = $this->createCallableMock();
@@ -32,10 +37,5 @@ class TestCase extends \PHPUnit_Framework_TestCase
             ->method('__invoke');
 
         return $mock;
-    }
-
-    public function createCallableMock()
-    {
-        return $this->getMock('React\\Promise\Stub\CallableStub');
     }
 }

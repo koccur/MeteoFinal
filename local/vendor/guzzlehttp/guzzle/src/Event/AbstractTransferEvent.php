@@ -30,16 +30,6 @@ abstract class AbstractTransferEvent extends AbstractRequestEvent
     }
 
     /**
-     * Returns true/false if a response is available.
-     *
-     * @return bool
-     */
-    public function hasResponse()
-    {
-        return !($this->transaction->response instanceof FutureInterface);
-    }
-
-    /**
      * Get the response.
      *
      * @return ResponseInterface|null
@@ -47,6 +37,16 @@ abstract class AbstractTransferEvent extends AbstractRequestEvent
     public function getResponse()
     {
         return $this->hasResponse() ? $this->transaction->response : null;
+    }
+
+    /**
+     * Returns true/false if a response is available.
+     *
+     * @return bool
+     */
+    public function hasResponse()
+    {
+        return !($this->transaction->response instanceof FutureInterface);
     }
 
     /**

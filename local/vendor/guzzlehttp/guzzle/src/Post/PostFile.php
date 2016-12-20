@@ -36,26 +36,6 @@ class PostFile implements PostFileInterface
         $this->prepareDefaultHeaders();
     }
 
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    public function getFilename()
-    {
-        return $this->filename;
-    }
-
-    public function getContent()
-    {
-        return $this->content;
-    }
-
-    public function getHeaders()
-    {
-        return $this->headers;
-    }
-
     /**
      * Prepares the contents of a POST file.
      *
@@ -80,6 +60,18 @@ class PostFile implements PostFileInterface
                 );
             }
         }
+    }
+
+    /**
+     * Check if a specific header exists on the POST file by name.
+     *
+     * @param string $name Case-insensitive header to check
+     *
+     * @return bool
+     */
+    private function hasHeader($name)
+    {
+        return isset(array_change_key_case($this->headers)[strtolower($name)]);
     }
 
     /**
@@ -121,15 +113,23 @@ class PostFile implements PostFileInterface
         }
     }
 
-    /**
-     * Check if a specific header exists on the POST file by name.
-     *
-     * @param string $name Case-insensitive header to check
-     *
-     * @return bool
-     */
-    private function hasHeader($name)
+    public function getName()
     {
-        return isset(array_change_key_case($this->headers)[strtolower($name)]);
+        return $this->name;
+    }
+
+    public function getFilename()
+    {
+        return $this->filename;
+    }
+
+    public function getContent()
+    {
+        return $this->content;
+    }
+
+    public function getHeaders()
+    {
+        return $this->headers;
     }
 }

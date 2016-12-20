@@ -44,31 +44,6 @@ class MessageParser
     }
 
     /**
-     * Parse an HTTP response message into an associative array of parts.
-     *
-     * @param string $message HTTP response to parse
-     *
-     * @return array|bool Returns false if the message is invalid
-     */
-    public function parseResponse($message)
-    {
-        if (!($parts = $this->parseMessage($message))) {
-            return false;
-        }
-
-        list($protocol, $version) = explode('/', trim($parts['start_line'][0]));
-
-        return [
-            'protocol'         => $protocol,
-            'protocol_version' => $version,
-            'code'             => $parts['start_line'][1],
-            'reason_phrase'    => isset($parts['start_line'][2]) ? $parts['start_line'][2] : '',
-            'headers'          => $parts['headers'],
-            'body'             => $parts['body']
-        ];
-    }
-
-    /**
      * Parse a message into parts
      *
      * @param string $message Message to parse
@@ -167,5 +142,30 @@ class MessageParser
         }
 
         return $urlParts;
+    }
+
+    /**
+     * Parse an HTTP response message into an associative array of parts.
+     *
+     * @param string $message HTTP response to parse
+     *
+     * @return array|bool Returns false if the message is invalid
+     */
+    public function parseResponse($message)
+    {
+        if (!($parts = $this->parseMessage($message))) {
+            return false;
+        }
+
+        list($protocol, $version) = explode('/', trim($parts['start_line'][0]));
+
+        return [
+            'protocol'         => $protocol,
+            'protocol_version' => $version,
+            'code'             => $parts['start_line'][1],
+            'reason_phrase'    => isset($parts['start_line'][2]) ? $parts['start_line'][2] : '',
+            'headers'          => $parts['headers'],
+            'body'             => $parts['body']
+        ];
     }
 }

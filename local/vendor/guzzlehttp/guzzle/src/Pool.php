@@ -90,6 +90,18 @@ class Pool implements FutureInterface
         );
     }
 
+    private function coerceIterable($requests)
+    {
+        if ($requests instanceof \Iterator) {
+            return $requests;
+        } elseif (is_array($requests)) {
+            return new \ArrayIterator($requests);
+        }
+
+        throw new \InvalidArgumentException('Expected Iterator or array. '
+            . 'Found ' . Core::describeType($requests));
+    }
+
     /**
      * Sends multiple requests in parallel and returns an array of responses
      * and exceptions that uses the same ordering as the provided requests.
@@ -134,43 +146,6 @@ class Pool implements FutureInterface
         return new BatchResults($hash);
     }
 
-    /**
-     * Creates a Pool and immediately sends the requests.
-     *
-     * @param ClientInterface $client   Client used to send the requests
-     * @param array|\Iterator $requests Requests to send in parallel
-     * @param array           $options  Passes through the options available in
-     *                                  {@see GuzzleHttp\Pool::__construct}
-     */
-    public static function send(
-        ClientInterface $client,
-        $requests,
-        array $options = []
-    ) {
-        $pool = new self($client, $requests, $options);
-        $pool->wait();
-    }
-
-    private function getPoolSize()
-    {
-        return is_callable($this->poolSize)
-            ? call_user_func($this->poolSize, count($this->waitQueue))
-            : $this->poolSize;
-    }
-
-    /**
-     * Add as many requests as possible up to the current pool limit.
-     */
-    private function addNextRequests()
-    {
-        $limit = max($this->getPoolSize() - count($this->waitQueue), 0);
-        while ($limit--) {
-            if (!$this->addNextRequest()) {
-                break;
-            }
-        }
-    }
-
     public function wait()
     {
         if ($this->isRealized) {
@@ -205,59 +180,23 @@ class Pool implements FutureInterface
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * Attempt to cancel all outstanding requests (requests that are queued for
-     * dereferencing). Returns true if all outstanding requests can be
-     * cancelled.
-     *
-     * @return bool
+     * Add as many requests as possible up to the current pool limit.
      */
-    public function cancel()
+    private function addNextRequests()
     {
-        if ($this->isRealized) {
-            return false;
-        }
-
-        $success = $this->isRealized = true;
-        foreach ($this->waitQueue as $response) {
-            if (!$response->cancel()) {
-                $success = false;
+        $limit = max($this->getPoolSize() - count($this->waitQueue), 0);
+        while ($limit--) {
+            if (!$this->addNextRequest()) {
+                break;
             }
         }
-
-        return $success;
     }
 
-    /**
-     * Returns a promise that is invoked when the pool completed. There will be
-     * no passed value.
-     *
-     * {@inheritdoc}
-     */
-    public function then(
-        callable $onFulfilled = null,
-        callable $onRejected = null,
-        callable $onProgress = null
-    ) {
-        return $this->promise->then($onFulfilled, $onRejected, $onProgress);
-    }
-
-    public function promise()
+    private function getPoolSize()
     {
-        return $this->promise;
-    }
-
-    private function coerceIterable($requests)
-    {
-        if ($requests instanceof \Iterator) {
-            return $requests;
-        } elseif (is_array($requests)) {
-            return new \ArrayIterator($requests);
-        }
-
-        throw new \InvalidArgumentException('Expected Iterator or array. '
-            . 'Found ' . Core::describeType($requests));
+        return is_callable($this->poolSize)
+            ? call_user_func($this->poolSize, count($this->waitQueue))
+            : $this->poolSize;
     }
 
     /**
@@ -317,11 +256,6 @@ class Pool implements FutureInterface
         return true;
     }
 
-    public function _trackRetries(BeforeEvent $e)
-    {
-        $e->getRequest()->getConfig()->set('_pool_retries', $e->getRetryCount());
-    }
-
     private function finishResponse($request, $value, $hash)
     {
         unset($this->waitQueue[$hash]);
@@ -329,5 +263,71 @@ class Pool implements FutureInterface
             ? ['request' => $request, 'response' => $value, 'error' => null]
             : ['request' => $request, 'response' => null, 'error' => $value];
         $this->deferred->notify($result);
+    }
+
+    /**
+     * Creates a Pool and immediately sends the requests.
+     *
+     * @param ClientInterface $client   Client used to send the requests
+     * @param array|\Iterator $requests Requests to send in parallel
+     * @param array           $options  Passes through the options available in
+     *                                  {@see GuzzleHttp\Pool::__construct}
+     */
+    public static function send(
+        ClientInterface $client,
+        $requests,
+        array $options = []
+    ) {
+        $pool = new self($client, $requests, $options);
+        $pool->wait();
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * Attempt to cancel all outstanding requests (requests that are queued for
+     * dereferencing). Returns true if all outstanding requests can be
+     * cancelled.
+     *
+     * @return bool
+     */
+    public function cancel()
+    {
+        if ($this->isRealized) {
+            return false;
+        }
+
+        $success = $this->isRealized = true;
+        foreach ($this->waitQueue as $response) {
+            if (!$response->cancel()) {
+                $success = false;
+            }
+        }
+
+        return $success;
+    }
+
+    /**
+     * Returns a promise that is invoked when the pool completed. There will be
+     * no passed value.
+     *
+     * {@inheritdoc}
+     */
+    public function then(
+        callable $onFulfilled = null,
+        callable $onRejected = null,
+        callable $onProgress = null
+    ) {
+        return $this->promise->then($onFulfilled, $onRejected, $onProgress);
+    }
+
+    public function promise()
+    {
+        return $this->promise;
+    }
+
+    public function _trackRetries(BeforeEvent $e)
+    {
+        $e->getRequest()->getConfig()->set('_pool_retries', $e->getRetryCount());
     }
 }

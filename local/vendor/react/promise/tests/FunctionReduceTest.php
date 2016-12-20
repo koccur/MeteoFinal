@@ -4,20 +4,6 @@ namespace React\Promise;
 
 class FunctionReduceTest extends TestCase
 {
-    protected function plus()
-    {
-        return function ($sum, $val) {
-            return $sum + $val;
-        };
-    }
-
-    protected function append()
-    {
-        return function ($sum, $val) {
-            return $sum . $val;
-        };
-    }
-
     /** @test */
     public function shouldReduceValuesWithoutInitialValue()
     {
@@ -31,6 +17,13 @@ class FunctionReduceTest extends TestCase
             [1, 2, 3],
             $this->plus()
         )->then($mock);
+    }
+
+    protected function plus()
+    {
+        return function ($sum, $val) {
+            return $sum + $val;
+        };
     }
 
     /** @test */
@@ -224,6 +217,13 @@ class FunctionReduceTest extends TestCase
             $this->append(),
             ''
         )->then($mock);
+    }
+
+    protected function append()
+    {
+        return function ($sum, $val) {
+            return $sum . $val;
+        };
     }
 
     /** @test */

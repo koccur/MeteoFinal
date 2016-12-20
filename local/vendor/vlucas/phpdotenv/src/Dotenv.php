@@ -31,6 +31,25 @@ class Dotenv
     }
 
     /**
+     * Returns the full path to the file.
+     *
+     * @param string $path
+     * @param string $file
+     *
+     * @return string
+     */
+    protected function getFilePath($path, $file)
+    {
+        if (!is_string($file)) {
+            $file = '.env';
+        }
+
+        $filePath = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
+
+        return $filePath;
+    }
+
+    /**
      * Load `.env` file in given directory.
      *
      * @return array
@@ -52,25 +71,6 @@ class Dotenv
         $this->loader = new Loader($this->filePath, $immutable = false);
 
         return $this->loader->load();
-    }
-
-    /**
-     * Returns the full path to the file.
-     *
-     * @param string $path
-     * @param string $file
-     *
-     * @return string
-     */
-    protected function getFilePath($path, $file)
-    {
-        if (!is_string($file)) {
-            $file = '.env';
-        }
-
-        $filePath = rtrim($path, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$file;
-
-        return $filePath;
     }
 
     /**

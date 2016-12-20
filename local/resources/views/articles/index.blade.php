@@ -1,11 +1,12 @@
 <!-- Zastanowic sie nad rozmiarem i wyswietlaniem nagłówka artykułu -->
 @extends('layouts.master')
 @section('content')
-
 <div class="col-xs-12 articles">
     <h1 id="article-page-header">Artykuły</h1>
+    @if(Auth::user()->can('can_create'))
     <a href="{{action('ArticlesController@create')}}">Stwórz nowy</a>
-    {{$articles=App\Article::latest('published_at')->published()->paginate(5)}}
+    @endif
+        {{$articles=App\Article::latest('published_at')->published()->paginate(5)}}
     @foreach($articles as $article)
         <div class="row">
             <div class="col-xs-1 pull-right">

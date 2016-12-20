@@ -33,6 +33,49 @@ class LimitStream implements StreamInterface
         $this->setOffset($offset);
     }
 
+    /**
+     * Set the limit of bytes that the decorator allows to be read from the
+     * stream.
+     *
+     * @param int $limit Number of bytes to allow to be read from the stream.
+     *                   Use -1 for no limit.
+     * @return self
+     */
+    public function setLimit($limit)
+    {
+        $this->limit = $limit;
+
+        return $this;
+    }
+
+    /**
+     * Set the offset to start limiting from
+     *
+     * @param int $offset Offset to seek to and begin byte limiting from
+     *
+     * @return self
+     * @throws SeekException
+     */
+    public function setOffset($offset)
+    {
+        $current = $this->stream->tell();
+
+        if ($current !== $offset) {
+            // If the stream cannot seek to the offset position, then read to it
+            if (!$this->stream->seek($offset)) {
+                if ($current > $offset) {
+                    throw new SeekException($this, $offset);
+                } else {
+                    $this->stream->read($offset - $current);
+                }
+            }
+        }
+
+        $this->offset = $offset;
+
+        return $this;
+    }
+
     public function eof()
     {
         // Always return true if the underlying stream is EOF
@@ -96,49 +139,6 @@ class LimitStream implements StreamInterface
     public function tell()
     {
         return $this->stream->tell() - $this->offset;
-    }
-
-    /**
-     * Set the offset to start limiting from
-     *
-     * @param int $offset Offset to seek to and begin byte limiting from
-     *
-     * @return self
-     * @throws SeekException
-     */
-    public function setOffset($offset)
-    {
-        $current = $this->stream->tell();
-
-        if ($current !== $offset) {
-            // If the stream cannot seek to the offset position, then read to it
-            if (!$this->stream->seek($offset)) {
-                if ($current > $offset) {
-                    throw new SeekException($this, $offset);
-                } else {
-                    $this->stream->read($offset - $current);
-                }
-            }
-        }
-
-        $this->offset = $offset;
-
-        return $this;
-    }
-
-    /**
-     * Set the limit of bytes that the decorator allows to be read from the
-     * stream.
-     *
-     * @param int $limit Number of bytes to allow to be read from the stream.
-     *                   Use -1 for no limit.
-     * @return self
-     */
-    public function setLimit($limit)
-    {
-        $this->limit = $limit;
-
-        return $this;
     }
 
     public function read($length)

@@ -29,50 +29,6 @@ class Core
     }
 
     /**
-     * Gets an array of header line values from a message for a specific header
-     *
-     * This method searches through the "headers" key of a message for a header
-     * using a case-insensitive search.
-     *
-     * @param array  $message Request or response hash.
-     * @param string $header  Header to retrieve
-     *
-     * @return array
-     */
-    public static function headerLines($message, $header)
-    {
-        $result = [];
-
-        if (!empty($message['headers'])) {
-            foreach ($message['headers'] as $name => $value) {
-                if (!strcasecmp($name, $header)) {
-                    $result = array_merge($result, $value);
-                }
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Gets a header value from a message as a string or null
-     *
-     * This method searches through the "headers" key of a message for a header
-     * using a case-insensitive search. The lines of the header are imploded
-     * using commas into a single string return value.
-     *
-     * @param array  $message Request or response hash.
-     * @param string $header  Header to retrieve
-     *
-     * @return string|null Returns the header string if found, or null if not.
-     */
-    public static function header($message, $header)
-    {
-        $match = self::headerLines($message, $header);
-        return $match ? implode(', ', $match) : null;
-    }
-
-    /**
      * Returns the first header value from a message as a string or null. If
      * a header line contains multiple values separated by a comma, then this
      * function will return the first value in the list.
@@ -140,10 +96,27 @@ class Core
     }
 
     /**
+     * Replaces any existing case insensitive headers with the given value.
+     *
+     * @param array  $message Message that contains 'headers'
+     * @param string $header Header to set.
+     * @param array $value Value to set.
+     *
+     * @return array
+     */
+    public static function setHeader(array $message, $header, array $value)
+    {
+        $message = self::removeHeader($message, $header);
+        $message['headers'][$header] = $value;
+
+        return $message;
+    }
+
+    /**
      * Removes a header from a message using a case-insensitive comparison.
      *
      * @param array  $message Message that contains 'headers'
-     * @param string $header  Header to remove
+     * @param string $header Header to remove
      *
      * @return array
      */
@@ -156,23 +129,6 @@ class Core
                 }
             }
         }
-
-        return $message;
-    }
-
-    /**
-     * Replaces any existing case insensitive headers with the given value.
-     *
-     * @param array  $message Message that contains 'headers'
-     * @param string $header  Header to set.
-     * @param array  $value   Value to set.
-     *
-     * @return array
-     */
-    public static function setHeader(array $message, $header, array $value)
-    {
-        $message = self::removeHeader($message, $header);
-        $message['headers'][$header] = $value;
 
         return $message;
     }
@@ -216,6 +172,50 @@ class Core
     }
 
     /**
+     * Gets a header value from a message as a string or null
+     *
+     * This method searches through the "headers" key of a message for a header
+     * using a case-insensitive search. The lines of the header are imploded
+     * using commas into a single string return value.
+     *
+     * @param array $message Request or response hash.
+     * @param string $header Header to retrieve
+     *
+     * @return string|null Returns the header string if found, or null if not.
+     */
+    public static function header($message, $header)
+    {
+        $match = self::headerLines($message, $header);
+        return $match ? implode(', ', $match) : null;
+    }
+
+    /**
+     * Gets an array of header line values from a message for a specific header
+     *
+     * This method searches through the "headers" key of a message for a header
+     * using a case-insensitive search.
+     *
+     * @param array $message Request or response hash.
+     * @param string $header Header to retrieve
+     *
+     * @return array
+     */
+    public static function headerLines($message, $header)
+    {
+        $result = [];
+
+        if (!empty($message['headers'])) {
+            foreach ($message['headers'] as $name => $value) {
+                if (!strcasecmp($name, $header)) {
+                    $result = array_merge($result, $value);
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Reads the body of a message into a string.
      *
      * @param array|FutureArrayInterface $message Array containing a "body" key
@@ -251,6 +251,29 @@ class Core
     }
 
     /**
+     * Debug function used to describe the provided value type and class.
+     *
+     * @param mixed $input
+     *
+     * @return string Returns a string containing the type of the variable and
+     *                if a class is provided, the class name.
+     */
+    public static function describeType($input)
+    {
+        switch (gettype($input)) {
+            case 'object':
+                return 'object(' . get_class($input) . ')';
+            case 'array':
+                return 'array(' . count($input) . ')';
+            default:
+                ob_start();
+                var_dump($input);
+                // normalize float vs double
+                return str_replace('double(', 'float(', rtrim(ob_get_clean()));
+        }
+    }
+
+    /**
      * Rewind the body of the provided message if possible.
      *
      * @param array $message Message that contains a 'body' field.
@@ -279,29 +302,6 @@ class Core
         return is_string($message['body'])
             || (is_object($message['body'])
                 && method_exists($message['body'], '__toString'));
-    }
-
-    /**
-     * Debug function used to describe the provided value type and class.
-     *
-     * @param mixed $input
-     *
-     * @return string Returns a string containing the type of the variable and
-     *                if a class is provided, the class name.
-     */
-    public static function describeType($input)
-    {
-        switch (gettype($input)) {
-            case 'object':
-                return 'object(' . get_class($input) . ')';
-            case 'array':
-                return 'array(' . count($input) . ')';
-            default:
-                ob_start();
-                var_dump($input);
-                // normalize float vs double
-                return str_replace('double(', 'float(', rtrim(ob_get_clean()));
-        }
     }
 
     /**

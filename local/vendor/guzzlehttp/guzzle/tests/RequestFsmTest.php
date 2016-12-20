@@ -85,6 +85,22 @@ class RequestFsmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(['before', 'complete', 'end'], $calls);
     }
 
+    private function addListeners(RequestInterface $request, &$calls)
+    {
+        $request->getEmitter()->on('before', function (BeforeEvent $e) use (&$calls) {
+            $calls[] = 'before';
+        }, RequestEvents::EARLY);
+        $request->getEmitter()->on('complete', function (CompleteEvent $e) use (&$calls) {
+            $calls[] = 'complete';
+        }, RequestEvents::EARLY);
+        $request->getEmitter()->on('error', function (ErrorEvent $e) use (&$calls) {
+            $calls[] = 'error';
+        }, RequestEvents::EARLY);
+        $request->getEmitter()->on('end', function (EndEvent $e) use (&$calls) {
+            $calls[] = 'end';
+        }, RequestEvents::EARLY);
+    }
+
     public function testTransitionsThroughErrorsInBefore()
     {
         $fsm = new RequestFsm(function () {
@@ -142,22 +158,6 @@ class RequestFsmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(200, $t->response->getStatusCode());
         $this->assertNull($t->exception);
         $this->assertEquals(['before', 'complete', 'error', 'complete', 'end'], $calls);
-    }
-
-    private function addListeners(RequestInterface $request, &$calls)
-    {
-        $request->getEmitter()->on('before', function (BeforeEvent $e) use (&$calls) {
-            $calls[] = 'before';
-        }, RequestEvents::EARLY);
-        $request->getEmitter()->on('complete', function (CompleteEvent $e) use (&$calls) {
-            $calls[] = 'complete';
-        }, RequestEvents::EARLY);
-        $request->getEmitter()->on('error', function (ErrorEvent $e) use (&$calls) {
-            $calls[] = 'error';
-        }, RequestEvents::EARLY);
-        $request->getEmitter()->on('end', function (EndEvent $e) use (&$calls) {
-            $calls[] = 'end';
-        }, RequestEvents::EARLY);
     }
 
     /**

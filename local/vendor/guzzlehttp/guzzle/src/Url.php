@@ -8,6 +8,9 @@ use GuzzleHttp\Ring\Core;
  */
 class Url
 {
+    private static $defaultPorts = ['http' => 80, 'https' => 443, 'ftp' => 21];
+    private static $pathPattern = '/[^a-zA-Z0-9\-\._~!\$&\'\(\)\*\+,;=%:@\/]+|%(?![A-Fa-f0-9]{2})/';
+    private static $queryPattern = '/[^a-zA-Z0-9\-\._~!\$\'\(\)\*\+,;%:@\/\?=&]+|%(?![A-Fa-f0-9]{2})/';
     private $scheme;
     private $host;
     private $port;
@@ -15,41 +18,82 @@ class Url
     private $password;
     private $path = '';
     private $fragment;
-    private static $defaultPorts = ['http' => 80, 'https' => 443, 'ftp' => 21];
-    private static $pathPattern = '/[^a-zA-Z0-9\-\._~!\$&\'\(\)\*\+,;=%:@\/]+|%(?![A-Fa-f0-9]{2})/';
-    private static $queryPattern = '/[^a-zA-Z0-9\-\._~!\$\'\(\)\*\+,;%:@\/\?=&]+|%(?![A-Fa-f0-9]{2})/';
     /** @var Query|string Query part of the URL */
     private $query;
 
     /**
-     * Factory method to create a new URL from a URL string
+     * Create a new URL from URL parts
      *
-     * @param string $url Full URL used to create a Url object
-     *
-     * @return Url
-     * @throws \InvalidArgumentException
+     * @param string             $scheme   Scheme of the URL
+     * @param string             $host     Host of the URL
+     * @param string             $username Username of the URL
+     * @param string             $password Password of the URL
+     * @param int                $port     Port of the URL
+     * @param string             $path     Path of the URL
+     * @param Query|array|string $query    Query string of the URL
+     * @param string             $fragment Fragment of the URL
      */
-    public static function fromString($url)
+    public function __construct(
+        $scheme,
+        $host,
+        $username = null,
+        $password = null,
+        $port = null,
+        $path = null,
+        $query = null,
+        $fragment = null
+    ) {
+        $this->scheme = strtolower($scheme);
+        $this->host = $host;
+        $this->port = $port;
+        $this->username = $username;
+        $this->password = $password;
+        $this->fragment = $fragment;
+
+        if ($query) {
+            $this->setQuery($query);
+        }
+
+        $this->setPath($path);
+    }
+
+    /**
+     * Encodes the path part of a URL without double-encoding percent-encoded
+     * key value pairs.
+     *
+     * @param string $path Path to encode
+     *
+     * @return string
+     */
+    public static function encodePath($path)
     {
-        static $defaults = ['scheme' => null, 'host' => null,
-            'path' => null, 'port' => null, 'query' => null,
-            'user' => null, 'pass' => null, 'fragment' => null];
+        static $cb = [__CLASS__, 'encodeMatch'];
+        return preg_replace_callback(self::$pathPattern, $cb, $path);
+    }
 
-        if (false === ($parts = parse_url($url))) {
-            throw new \InvalidArgumentException('Unable to parse malformed '
-                . 'url: ' . $url);
+    private static function encodeMatch(array $match)
+    {
+        return rawurlencode($match[0]);
+    }
+
+    /**
+     * Clone the URL
+     */
+    public function __clone()
+    {
+        if ($this->query instanceof Query) {
+            $this->query = clone $this->query;
         }
+    }
 
-        $parts += $defaults;
-
-        // Convert the query string into a Query object
-        if ($parts['query'] || 0 !== strlen($parts['query'])) {
-            $parts['query'] = Query::fromString($parts['query']);
-        }
-
-        return new static($parts['scheme'], $parts['host'], $parts['user'],
-            $parts['pass'], $parts['port'], $parts['path'], $parts['query'],
-            $parts['fragment']);
+    /**
+     * Returns the URL as a URL string
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return static::buildUrl($this->getParts());
     }
 
     /**
@@ -117,62 +161,6 @@ class Url
     }
 
     /**
-     * Create a new URL from URL parts
-     *
-     * @param string             $scheme   Scheme of the URL
-     * @param string             $host     Host of the URL
-     * @param string             $username Username of the URL
-     * @param string             $password Password of the URL
-     * @param int                $port     Port of the URL
-     * @param string             $path     Path of the URL
-     * @param Query|array|string $query    Query string of the URL
-     * @param string             $fragment Fragment of the URL
-     */
-    public function __construct(
-        $scheme,
-        $host,
-        $username = null,
-        $password = null,
-        $port = null,
-        $path = null,
-        $query = null,
-        $fragment = null
-    ) {
-        $this->scheme = strtolower($scheme);
-        $this->host = $host;
-        $this->port = $port;
-        $this->username = $username;
-        $this->password = $password;
-        $this->fragment = $fragment;
-
-        if ($query) {
-            $this->setQuery($query);
-        }
-
-        $this->setPath($path);
-    }
-
-    /**
-     * Clone the URL
-     */
-    public function __clone()
-    {
-        if ($this->query instanceof Query) {
-            $this->query = clone $this->query;
-        }
-    }
-
-    /**
-     * Returns the URL as a URL string
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        return static::buildUrl($this->getParts());
-    }
-
-    /**
      * Get the parts of the URL as an array
      *
      * @return array
@@ -189,6 +177,16 @@ class Url
             'query'    => $this->query,
             'fragment' => $this->fragment,
         );
+    }
+
+    /**
+     * Get the host part of the URL
+     *
+     * @return string
+     */
+    public function getHost()
+    {
+        return $this->host;
     }
 
     /**
@@ -210,13 +208,13 @@ class Url
     }
 
     /**
-     * Get the host part of the URL
+     * Get the scheme part of the URL
      *
      * @return string
      */
-    public function getHost()
+    public function getScheme()
     {
-        return $this->host;
+        return $this->scheme;
     }
 
     /**
@@ -235,26 +233,6 @@ class Url
         }
 
         $this->scheme = strtolower($scheme);
-    }
-
-    /**
-     * Get the scheme part of the URL
-     *
-     * @return string
-     */
-    public function getScheme()
-    {
-        return $this->scheme;
-    }
-
-    /**
-     * Set the port part of the URL
-     *
-     * @param int $port Port to set
-     */
-    public function setPort($port)
-    {
-        $this->port = $port;
     }
 
     /**
@@ -277,55 +255,13 @@ class Url
     }
 
     /**
-     * Set the path part of the URL.
+     * Set the port part of the URL
      *
-     * The provided URL is URL encoded as necessary.
-     *
-     * @param string $path Path string to set
+     * @param int $port Port to set
      */
-    public function setPath($path)
+    public function setPort($port)
     {
-        $this->path = self::encodePath($path);
-    }
-
-    /**
-     * Removes dot segments from a URL
-     * @link http://tools.ietf.org/html/rfc3986#section-5.2.4
-     */
-    public function removeDotSegments()
-    {
-        static $noopPaths = ['' => true, '/' => true, '*' => true];
-        static $ignoreSegments = ['.' => true, '..' => true];
-
-        if (isset($noopPaths[$this->path])) {
-            return;
-        }
-
-        $results = [];
-        $segments = $this->getPathSegments();
-        foreach ($segments as $segment) {
-            if ($segment == '..') {
-                array_pop($results);
-            } elseif (!isset($ignoreSegments[$segment])) {
-                $results[] = $segment;
-            }
-        }
-
-        $newPath = implode('/', $results);
-
-        // Add the leading slash if necessary
-        if (substr($this->path, 0, 1) === '/' &&
-            substr($newPath, 0, 1) !== '/'
-        ) {
-            $newPath = '/' . $newPath;
-        }
-
-        // Add the trailing slash if necessary
-        if ($newPath != '/' && isset($ignoreSegments[end($segments)])) {
-            $newPath .= '/';
-        }
-
-        $this->path = $newPath;
+        $this->port = $port;
     }
 
     /**
@@ -361,23 +297,15 @@ class Url
     }
 
     /**
-     * Get the path segments of the URL as an array
+     * Set the path part of the URL.
      *
-     * @return array
-     */
-    public function getPathSegments()
-    {
-        return explode('/', $this->path);
-    }
-
-    /**
-     * Set the password part of the URL
+     * The provided URL is URL encoded as necessary.
      *
-     * @param string $password Password to set
+     * @param string $path Path string to set
      */
-    public function setPassword($password)
+    public function setPath($path)
     {
-        $this->password = $password;
+        $this->path = self::encodePath($path);
     }
 
     /**
@@ -391,13 +319,13 @@ class Url
     }
 
     /**
-     * Set the username part of the URL
+     * Set the password part of the URL
      *
-     * @param string $username Username to set
+     * @param string $password Password to set
      */
-    public function setUsername($username)
+    public function setPassword($password)
     {
-        $this->username = $username;
+        $this->password = $password;
     }
 
     /**
@@ -408,6 +336,16 @@ class Url
     public function getUsername()
     {
         return $this->username;
+    }
+
+    /**
+     * Set the username part of the URL
+     *
+     * @param string $username Username to set
+     */
+    public function setUsername($username)
+    {
+        $this->username = $username;
     }
 
     /**
@@ -484,16 +422,6 @@ class Url
     public function setFragment($fragment)
     {
         $this->fragment = $fragment;
-    }
-
-    /**
-     * Check if this is an absolute URL
-     *
-     * @return bool
-     */
-    public function isAbsolute()
-    {
-        return $this->scheme && $this->host;
     }
 
     /**
@@ -575,21 +503,93 @@ class Url
     }
 
     /**
-     * Encodes the path part of a URL without double-encoding percent-encoded
-     * key value pairs.
+     * Factory method to create a new URL from a URL string
      *
-     * @param string $path Path to encode
+     * @param string $url Full URL used to create a Url object
      *
-     * @return string
+     * @return Url
+     * @throws \InvalidArgumentException
      */
-    public static function encodePath($path)
+    public static function fromString($url)
     {
-        static $cb = [__CLASS__, 'encodeMatch'];
-        return preg_replace_callback(self::$pathPattern, $cb, $path);
+        static $defaults = ['scheme' => null, 'host' => null,
+            'path' => null, 'port' => null, 'query' => null,
+            'user' => null, 'pass' => null, 'fragment' => null];
+
+        if (false === ($parts = parse_url($url))) {
+            throw new \InvalidArgumentException('Unable to parse malformed '
+                . 'url: ' . $url);
+        }
+
+        $parts += $defaults;
+
+        // Convert the query string into a Query object
+        if ($parts['query'] || 0 !== strlen($parts['query'])) {
+            $parts['query'] = Query::fromString($parts['query']);
+        }
+
+        return new static($parts['scheme'], $parts['host'], $parts['user'],
+            $parts['pass'], $parts['port'], $parts['path'], $parts['query'],
+            $parts['fragment']);
     }
 
-    private static function encodeMatch(array $match)
+    /**
+     * Check if this is an absolute URL
+     *
+     * @return bool
+     */
+    public function isAbsolute()
     {
-        return rawurlencode($match[0]);
+        return $this->scheme && $this->host;
+    }
+
+    /**
+     * Removes dot segments from a URL
+     * @link http://tools.ietf.org/html/rfc3986#section-5.2.4
+     */
+    public function removeDotSegments()
+    {
+        static $noopPaths = ['' => true, '/' => true, '*' => true];
+        static $ignoreSegments = ['.' => true, '..' => true];
+
+        if (isset($noopPaths[$this->path])) {
+            return;
+        }
+
+        $results = [];
+        $segments = $this->getPathSegments();
+        foreach ($segments as $segment) {
+            if ($segment == '..') {
+                array_pop($results);
+            } elseif (!isset($ignoreSegments[$segment])) {
+                $results[] = $segment;
+            }
+        }
+
+        $newPath = implode('/', $results);
+
+        // Add the leading slash if necessary
+        if (substr($this->path, 0, 1) === '/' &&
+            substr($newPath, 0, 1) !== '/'
+        ) {
+            $newPath = '/' . $newPath;
+        }
+
+        // Add the trailing slash if necessary
+        if ($newPath != '/' && isset($ignoreSegments[end($segments)])) {
+            $newPath .= '/';
+        }
+
+        $this->path = $newPath;
+    }
+
+    /**
+     * Get the path segments of the URL as an array
+     *
+     * @return array
+     */
+    public function getPathSegments()
+    {
+        return explode('/', $this->path);
     }
 }

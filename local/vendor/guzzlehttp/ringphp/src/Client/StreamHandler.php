@@ -38,6 +38,164 @@ class StreamHandler
         }
     }
 
+    private function createStream($url, array $request)
+    {
+        static $methods;
+        if (!$methods) {
+            $methods = array_flip(get_class_methods(__CLASS__));
+        }
+
+        // HTTP/1.1 streams using the PHP stream wrapper require a
+        // Connection: close header
+        if ((!isset($request['version']) || $request['version'] == '1.1')
+            && !Core::hasHeader($request, 'Connection')
+        ) {
+            $request['headers']['Connection'] = ['close'];
+        }
+
+        // Ensure SSL is verified by default
+        if (!isset($request['client']['verify'])) {
+            $request['client']['verify'] = true;
+        }
+
+        $params = [];
+        $options = $this->getDefaultOptions($request);
+
+        if (isset($request['client'])) {
+            foreach ($request['client'] as $key => $value) {
+                $method = "add_{$key}";
+                if (isset($methods[$method])) {
+                    $this->{$method}($request, $options, $value, $params);
+                }
+            }
+        }
+
+        return $this->createStreamResource(
+            $url,
+            $request,
+            $options,
+            $this->createContext($request, $options, $params)
+        );
+    }
+
+    private function getDefaultOptions(array $request)
+    {
+        $headers = "";
+        foreach ($request['headers'] as $name => $value) {
+            foreach ((array) $value as $val) {
+                $headers .= "$name: $val\r\n";
+            }
+        }
+
+        $context = [
+            'http' => [
+                'method'           => $request['http_method'],
+                'header'           => $headers,
+                'protocol_version' => isset($request['version']) ? $request['version'] : 1.1,
+                'ignore_errors'    => true,
+                'follow_location'  => 0,
+            ],
+        ];
+
+        $body = Core::body($request);
+        if (isset($body)) {
+            $context['http']['content'] = $body;
+            // Prevent the HTTP handler from adding a Content-Type header.
+            if (!Core::hasHeader($request, 'Content-Type')) {
+                $context['http']['header'] .= "Content-Type:\r\n";
+            }
+        }
+
+        $context['http']['header'] = rtrim($context['http']['header']);
+
+        return $context;
+    }
+
+    private function createStreamResource(
+        $url,
+        array $request,
+        array $options,
+        $context
+    ) {
+        return $this->createResource(
+            function () use ($url, $context) {
+                if (false === strpos($url, 'http')) {
+                    trigger_error("URL is invalid: {$url}", E_USER_WARNING);
+                    return null;
+                }
+                $resource = fopen($url, 'r', null, $context);
+                $this->lastHeaders = $http_response_header;
+                return $resource;
+            },
+            $request,
+            $options
+        );
+    }
+
+    /**
+     * Create a resource and check to ensure it was created successfully
+     *
+     * @param callable $callback Callable that returns stream resource
+     *
+     * @return resource
+     * @throws \RuntimeException on error
+     */
+    private function createResource(callable $callback)
+    {
+        $errors = null;
+        set_error_handler(function ($_, $msg, $file, $line) use (&$errors) {
+            $errors[] = [
+                'message' => $msg,
+                'file'    => $file,
+                'line'    => $line
+            ];
+            return true;
+        });
+
+        $resource = $callback();
+        restore_error_handler();
+
+        if (!$resource) {
+            $message = 'Error creating resource: ';
+            foreach ($errors as $err) {
+                foreach ($err as $key => $value) {
+                    $message .= "[$key] $value" . PHP_EOL;
+                }
+            }
+            throw new RingException(trim($message));
+        }
+
+        return $resource;
+    }
+
+    private function createContext(array $request, array $options, array $params)
+    {
+        $this->applyCustomOptions($request, $options);
+        return $this->createResource(
+            function () use ($request, $options, $params) {
+                return stream_context_create($options, $params);
+            },
+            $request,
+            $options
+        );
+    }
+
+    private function applyCustomOptions(array $request, array &$options)
+    {
+        if (!isset($request['client']['stream_context'])) {
+            return;
+        }
+
+        if (!is_array($request['client']['stream_context'])) {
+            throw new RingException('stream_context must be an array');
+        }
+
+        $options = array_replace_recursive(
+            $options,
+            $request['client']['stream_context']
+        );
+    }
+
     private function createResponse(array $request, $url, $stream)
     {
         $hdrs = $this->lastHeaders;
@@ -142,115 +300,6 @@ class StreamHandler
             'effective_url' => $url,
             'error'         => $e
         ]);
-    }
-
-    /**
-     * Create a resource and check to ensure it was created successfully
-     *
-     * @param callable $callback Callable that returns stream resource
-     *
-     * @return resource
-     * @throws \RuntimeException on error
-     */
-    private function createResource(callable $callback)
-    {
-        $errors = null;
-        set_error_handler(function ($_, $msg, $file, $line) use (&$errors) {
-            $errors[] = [
-                'message' => $msg,
-                'file'    => $file,
-                'line'    => $line
-            ];
-            return true;
-        });
-
-        $resource = $callback();
-        restore_error_handler();
-
-        if (!$resource) {
-            $message = 'Error creating resource: ';
-            foreach ($errors as $err) {
-                foreach ($err as $key => $value) {
-                    $message .= "[$key] $value" . PHP_EOL;
-                }
-            }
-            throw new RingException(trim($message));
-        }
-
-        return $resource;
-    }
-
-    private function createStream($url, array $request)
-    {
-        static $methods;
-        if (!$methods) {
-            $methods = array_flip(get_class_methods(__CLASS__));
-        }
-
-        // HTTP/1.1 streams using the PHP stream wrapper require a
-        // Connection: close header
-        if ((!isset($request['version']) || $request['version'] == '1.1')
-            && !Core::hasHeader($request, 'Connection')
-        ) {
-            $request['headers']['Connection'] = ['close'];
-        }
-
-        // Ensure SSL is verified by default
-        if (!isset($request['client']['verify'])) {
-            $request['client']['verify'] = true;
-        }
-
-        $params = [];
-        $options = $this->getDefaultOptions($request);
-
-        if (isset($request['client'])) {
-            foreach ($request['client'] as $key => $value) {
-                $method = "add_{$key}";
-                if (isset($methods[$method])) {
-                    $this->{$method}($request, $options, $value, $params);
-                }
-            }
-        }
-
-        return $this->createStreamResource(
-            $url,
-            $request,
-            $options,
-            $this->createContext($request, $options, $params)
-        );
-    }
-
-    private function getDefaultOptions(array $request)
-    {
-        $headers = "";
-        foreach ($request['headers'] as $name => $value) {
-            foreach ((array) $value as $val) {
-                $headers .= "$name: $val\r\n";
-            }
-        }
-
-        $context = [
-            'http' => [
-                'method'           => $request['http_method'],
-                'header'           => $headers,
-                'protocol_version' => isset($request['version']) ? $request['version'] : 1.1,
-                'ignore_errors'    => true,
-                'follow_location'  => 0,
-            ],
-        ];
-
-        $body = Core::body($request);
-        if (isset($body)) {
-            $context['http']['content'] = $body;
-            // Prevent the HTTP handler from adding a Content-Type header.
-            if (!Core::hasHeader($request, 'Content-Type')) {
-                $context['http']['header'] .= "Content-Type:\r\n";
-            }
-        }
-
-        $context['http']['header'] = rtrim($context['http']['header']);
-
-        return $context;
     }
 
     private function add_proxy(array $request, &$options, $value, &$params)
@@ -361,54 +410,5 @@ class StreamHandler
         $params['notification'] = isset($params['notification'])
             ? Core::callArray([$params['notification'], $fn])
             : $fn;
-    }
-
-    private function applyCustomOptions(array $request, array &$options)
-    {
-        if (!isset($request['client']['stream_context'])) {
-            return;
-        }
-
-        if (!is_array($request['client']['stream_context'])) {
-            throw new RingException('stream_context must be an array');
-        }
-
-        $options = array_replace_recursive(
-            $options,
-            $request['client']['stream_context']
-        );
-    }
-
-    private function createContext(array $request, array $options, array $params)
-    {
-        $this->applyCustomOptions($request, $options);
-        return $this->createResource(
-            function () use ($request, $options, $params) {
-                return stream_context_create($options, $params);
-            },
-            $request,
-            $options
-        );
-    }
-
-    private function createStreamResource(
-        $url,
-        array $request,
-        array $options,
-        $context
-    ) {
-        return $this->createResource(
-            function () use ($url, $context) {
-                if (false === strpos($url, 'http')) {
-                    trigger_error("URL is invalid: {$url}", E_USER_WARNING);
-                    return null;
-                }
-                $resource = fopen($url, 'r', null, $context);
-                $this->lastHeaders = $http_response_header;
-                return $resource;
-            },
-            $request,
-            $options
-        );
     }
 }

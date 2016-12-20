@@ -32,47 +32,6 @@ class MultipartBody implements StreamInterface
     }
 
     /**
-     * Get the boundary
-     *
-     * @return string
-     */
-    public function getBoundary()
-    {
-        return $this->boundary;
-    }
-
-    public function isWritable()
-    {
-        return false;
-    }
-
-    /**
-     * Get the string needed to transfer a POST field
-     */
-    private function getFieldString($name, $value)
-    {
-        return sprintf(
-            "--%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
-            $this->boundary,
-            $name,
-            $value
-        );
-    }
-
-    /**
-     * Get the headers needed before transferring the content of a POST file
-     */
-    private function getFileHeaders(PostFileInterface $file)
-    {
-        $headers = '';
-        foreach ($file->getHeaders() as $key => $value) {
-            $headers .= "{$key}: {$value}\r\n";
-        }
-
-        return "--{$this->boundary}\r\n" . trim($headers) . "\r\n\r\n";
-    }
-
-    /**
      * Create the aggregate stream that will be used to upload the POST data
      */
     protected function createStream(array $fields, array $files)
@@ -105,5 +64,46 @@ class MultipartBody implements StreamInterface
         $stream->addStream(Stream::factory("--{$this->boundary}--\r\n"));
 
         return $stream;
+    }
+
+    /**
+     * Get the string needed to transfer a POST field
+     */
+    private function getFieldString($name, $value)
+    {
+        return sprintf(
+            "--%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n",
+            $this->boundary,
+            $name,
+            $value
+        );
+    }
+
+    /**
+     * Get the headers needed before transferring the content of a POST file
+     */
+    private function getFileHeaders(PostFileInterface $file)
+    {
+        $headers = '';
+        foreach ($file->getHeaders() as $key => $value) {
+            $headers .= "{$key}: {$value}\r\n";
+        }
+
+        return "--{$this->boundary}\r\n" . trim($headers) . "\r\n\r\n";
+    }
+
+    /**
+     * Get the boundary
+     *
+     * @return string
+     */
+    public function getBoundary()
+    {
+        return $this->boundary;
+    }
+
+    public function isWritable()
+    {
+        return false;
     }
 }

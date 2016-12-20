@@ -29,16 +29,6 @@ class AppendStream implements StreamInterface
         }
     }
 
-    public function __toString()
-    {
-        try {
-            $this->seek(0);
-            return $this->getContents();
-        } catch (\Exception $e) {
-            return '';
-        }
-    }
-
     /**
      * Add a stream to the AppendStream
      *
@@ -60,76 +50,14 @@ class AppendStream implements StreamInterface
         $this->streams[] = $stream;
     }
 
-    public function getContents()
+    public function __toString()
     {
-        return Utils::copyToString($this);
-    }
-
-    /**
-     * Closes each attached stream.
-     *
-     * {@inheritdoc}
-     */
-    public function close()
-    {
-        $this->pos = $this->current = 0;
-
-        foreach ($this->streams as $stream) {
-            $stream->close();
+        try {
+            $this->seek(0);
+            return $this->getContents();
+        } catch (\Exception $e) {
+            return '';
         }
-
-        $this->streams = [];
-    }
-
-    /**
-     * Detaches each attached stream
-     *
-     * {@inheritdoc}
-     */
-    public function detach()
-    {
-        $this->close();
-        $this->detached = true;
-    }
-
-    public function attach($stream)
-    {
-        throw new CannotAttachException();
-    }
-
-    public function tell()
-    {
-        return $this->pos;
-    }
-
-    /**
-     * Tries to calculate the size by adding the size of each stream.
-     *
-     * If any of the streams do not return a valid number, then the size of the
-     * append stream cannot be determined and null is returned.
-     *
-     * {@inheritdoc}
-     */
-    public function getSize()
-    {
-        $size = 0;
-
-        foreach ($this->streams as $stream) {
-            $s = $stream->getSize();
-            if ($s === null) {
-                return null;
-            }
-            $size += $s;
-        }
-
-        return $size;
-    }
-
-    public function eof()
-    {
-        return !$this->streams ||
-            ($this->current >= count($this->streams) - 1 &&
-             $this->streams[$this->current]->eof());
     }
 
     /**
@@ -165,6 +93,13 @@ class AppendStream implements StreamInterface
         return $this->pos == $offset;
     }
 
+    public function eof()
+    {
+        return !$this->streams ||
+            ($this->current >= count($this->streams) - 1 &&
+             $this->streams[$this->current]->eof());
+    }
+
     /**
      * Reads from all of the appended streams until the length is met or EOF.
      *
@@ -191,6 +126,71 @@ class AppendStream implements StreamInterface
         $this->pos += strlen($buffer);
 
         return $buffer;
+    }
+
+    public function getContents()
+    {
+        return Utils::copyToString($this);
+    }
+
+    /**
+     * Detaches each attached stream
+     *
+     * {@inheritdoc}
+     */
+    public function detach()
+    {
+        $this->close();
+        $this->detached = true;
+    }
+
+    /**
+     * Closes each attached stream.
+     *
+     * {@inheritdoc}
+     */
+    public function close()
+    {
+        $this->pos = $this->current = 0;
+
+        foreach ($this->streams as $stream) {
+            $stream->close();
+        }
+
+        $this->streams = [];
+    }
+
+    public function attach($stream)
+    {
+        throw new CannotAttachException();
+    }
+
+    public function tell()
+    {
+        return $this->pos;
+    }
+
+    /**
+     * Tries to calculate the size by adding the size of each stream.
+     *
+     * If any of the streams do not return a valid number, then the size of the
+     * append stream cannot be determined and null is returned.
+     *
+     * {@inheritdoc}
+     */
+    public function getSize()
+    {
+        $size = 0;
+
+        foreach ($this->streams as $stream) {
+            $s = $stream->getSize();
+            if ($s === null) {
+                return null;
+            }
+            $size += $s;
+        }
+
+        return $size;
     }
 
     public function isReadable()

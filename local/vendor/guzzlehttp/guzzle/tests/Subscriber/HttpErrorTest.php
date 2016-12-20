@@ -21,6 +21,11 @@ class HttpErrorTest extends \PHPUnit_Framework_TestCase
         (new HttpError())->onComplete($event);
     }
 
+    private function getEvent()
+    {
+        return new CompleteEvent(new Transaction(new Client(), new Request('PUT', '/')));
+    }
+
     /**
      * @expectedException \GuzzleHttp\Exception\ClientException
      */
@@ -39,11 +44,6 @@ class HttpErrorTest extends \PHPUnit_Framework_TestCase
         $event = $this->getEvent();
         $event->intercept(new Response(500));
         (new HttpError())->onComplete($event);
-    }
-
-    private function getEvent()
-    {
-        return new CompleteEvent(new Transaction(new Client(), new Request('PUT', '/')));
     }
 
     /**

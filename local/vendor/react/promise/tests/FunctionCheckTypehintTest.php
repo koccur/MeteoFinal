@@ -83,6 +83,11 @@ function testCallbackWithoutTypehint()
 
 class TestCallbackWithTypehintClass
 {
+    public static function testCallbackStatic(\InvalidArgumentException $e)
+    {
+
+    }
+
     public function __invoke(\InvalidArgumentException $e)
     {
 
@@ -92,26 +97,21 @@ class TestCallbackWithTypehintClass
     {
 
     }
-
-    public static function testCallbackStatic(\InvalidArgumentException $e)
-    {
-
-    }
 }
 
 class TestCallbackWithoutTypehintClass
 {
+    public static function testCallbackStatic()
+    {
+
+    }
+
     public function __invoke()
     {
 
     }
 
     public function testCallback()
-    {
-
-    }
-
-    public static function testCallbackStatic()
     {
 
     }

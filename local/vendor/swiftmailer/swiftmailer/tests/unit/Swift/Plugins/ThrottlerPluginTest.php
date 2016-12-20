@@ -35,6 +35,42 @@ class Swift_Plugins_ThrottlerPluginTest extends \SwiftMailerTestCase
         }
     }
 
+    private function _createSleeper()
+    {
+        return $this->getMockery('Swift_Plugins_Sleeper');
+    }
+
+    // -- Creation Methods
+
+    private function _createTimer()
+    {
+        return $this->getMockery('Swift_Plugins_Timer');
+    }
+
+    private function _createMessageWithByteCount($bytes)
+    {
+        $msg = $this->getMockery('Swift_Mime_Message');
+        $msg->shouldReceive('toByteStream')
+            ->zeroOrMoreTimes()
+            ->andReturnUsing(function ($is) use ($bytes) {
+                for ($i = 0; $i < $bytes; ++$i) {
+                    $is->write('x');
+                }
+            });
+
+        return $msg;
+    }
+
+    private function _createSendEvent($message)
+    {
+        $evt = $this->getMockery('Swift_Events_SendEvent');
+        $evt->shouldReceive('getMessage')
+            ->zeroOrMoreTimes()
+            ->andReturn($message);
+
+        return $evt;
+    }
+
     public function testMessagesPerMinuteThrottling()
     {
         $sleeper = $this->_createSleeper();
@@ -64,41 +100,5 @@ class Swift_Plugins_ThrottlerPluginTest extends \SwiftMailerTestCase
             $plugin->beforeSendPerformed($evt);
             $plugin->sendPerformed($evt);
         }
-    }
-
-    // -- Creation Methods
-
-    private function _createSleeper()
-    {
-        return $this->getMockery('Swift_Plugins_Sleeper');
-    }
-
-    private function _createTimer()
-    {
-        return $this->getMockery('Swift_Plugins_Timer');
-    }
-
-    private function _createMessageWithByteCount($bytes)
-    {
-        $msg = $this->getMockery('Swift_Mime_Message');
-        $msg->shouldReceive('toByteStream')
-            ->zeroOrMoreTimes()
-            ->andReturnUsing(function ($is) use ($bytes) {
-                for ($i = 0; $i < $bytes; ++$i) {
-                    $is->write('x');
-                }
-            });
-
-        return $msg;
-    }
-
-    private function _createSendEvent($message)
-    {
-        $evt = $this->getMockery('Swift_Events_SendEvent');
-        $evt->shouldReceive('getMessage')
-            ->zeroOrMoreTimes()
-            ->andReturn($message);
-
-        return $evt;
     }
 }

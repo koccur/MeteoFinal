@@ -50,21 +50,6 @@ class Prepare implements SubscriberInterface
         $this->addExpectHeader($request, $body);
     }
 
-    private function addContentType(
-        RequestInterface $request,
-        StreamInterface $body
-    ) {
-        if (!($uri = $body->getMetadata('uri'))) {
-            return;
-        }
-
-        // Guess the content-type based on the stream's "uri" metadata value.
-        // The file extension is used to determine the appropriate mime-type.
-        if ($contentType = Mimetypes::getInstance()->fromFilename($uri)) {
-            $request->setHeader('Content-Type', $contentType);
-        }
-    }
-
     private function addContentLength(
         RequestInterface $request,
         StreamInterface $body
@@ -90,6 +75,21 @@ class Prepare implements SubscriberInterface
             // content-length header and we're using HTTP/1.1.
             $request->setHeader('Transfer-Encoding', 'chunked');
             $request->removeHeader('Content-Length');
+        }
+    }
+
+    private function addContentType(
+        RequestInterface $request,
+        StreamInterface $body
+    ) {
+        if (!($uri = $body->getMetadata('uri'))) {
+            return;
+        }
+
+        // Guess the content-type based on the stream's "uri" metadata value.
+        // The file extension is used to determine the appropriate mime-type.
+        if ($contentType = Mimetypes::getInstance()->fromFilename($uri)) {
+            $request->setHeader('Content-Type', $contentType);
         }
     }
 

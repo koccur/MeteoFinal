@@ -28,6 +28,33 @@ class FileCookieJar extends CookieJar
     }
 
     /**
+     * Load cookies from a JSON formatted file.
+     *
+     * Old cookies are kept unless overwritten by newly loaded ones.
+     *
+     * @param string $filename Cookie file to load.
+     * @throws \RuntimeException if the file cannot be loaded.
+     */
+    public function load($filename)
+    {
+        $json = file_get_contents($filename);
+        if (false === $json) {
+            // @codeCoverageIgnoreStart
+            throw new \RuntimeException("Unable to load file {$filename}");
+            // @codeCoverageIgnoreEnd
+        }
+
+        $data = Utils::jsonDecode($json, true);
+        if (is_array($data)) {
+            foreach (Utils::jsonDecode($json, true) as $cookie) {
+                $this->setCookie(new SetCookie($cookie));
+            }
+        } elseif (strlen($data)) {
+            throw new \RuntimeException("Invalid cookie file: {$filename}");
+        }
+    }
+
+    /**
      * Saves the file when shutting down
      */
     public function __destruct()
@@ -54,33 +81,6 @@ class FileCookieJar extends CookieJar
             // @codeCoverageIgnoreStart
             throw new \RuntimeException("Unable to save file {$filename}");
             // @codeCoverageIgnoreEnd
-        }
-    }
-
-    /**
-     * Load cookies from a JSON formatted file.
-     *
-     * Old cookies are kept unless overwritten by newly loaded ones.
-     *
-     * @param string $filename Cookie file to load.
-     * @throws \RuntimeException if the file cannot be loaded.
-     */
-    public function load($filename)
-    {
-        $json = file_get_contents($filename);
-        if (false === $json) {
-            // @codeCoverageIgnoreStart
-            throw new \RuntimeException("Unable to load file {$filename}");
-            // @codeCoverageIgnoreEnd
-        }
-
-        $data = Utils::jsonDecode($json, true);
-        if (is_array($data)) {
-            foreach (Utils::jsonDecode($json, true) as $cookie) {
-                $this->setCookie(new SetCookie($cookie));
-            }
-        } elseif (strlen($data)) {
-            throw new \RuntimeException("Invalid cookie file: {$filename}");
         }
     }
 }

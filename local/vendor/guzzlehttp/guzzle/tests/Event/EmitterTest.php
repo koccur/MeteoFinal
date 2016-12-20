@@ -20,18 +20,6 @@ class EmitterTest extends \PHPUnit_Framework_TestCase
     private $emitter;
     private $listener;
 
-    protected function setUp()
-    {
-        $this->emitter = new Emitter();
-        $this->listener = new TestEventListener();
-    }
-
-    protected function tearDown()
-    {
-        $this->emitter = null;
-        $this->listener = null;
-    }
-
     public function testInitialState()
     {
         $this->assertEquals(array(), $this->emitter->listeners());
@@ -105,6 +93,15 @@ class EmitterTest extends \PHPUnit_Framework_TestCase
         $event = $this->getEvent();
         $return = $this->emitter->emit(self::preFoo, $event);
         $this->assertSame($event, $return);
+    }
+
+    /**
+     * @return \GuzzleHttp\Event\EventInterface
+     */
+    private function getEvent()
+    {
+        return $this->getMockBuilder('GuzzleHttp\Event\AbstractEvent')
+            ->getMockForAbstractClass();
     }
 
     public function testDispatchForClosure()
@@ -267,13 +264,16 @@ class EmitterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('edcabf', $b);
     }
 
-    /**
-     * @return \GuzzleHttp\Event\EventInterface
-     */
-    private function getEvent()
+    protected function setUp()
     {
-        return $this->getMockBuilder('GuzzleHttp\Event\AbstractEvent')
-            ->getMockForAbstractClass();
+        $this->emitter = new Emitter();
+        $this->listener = new TestEventListener();
+    }
+
+    protected function tearDown()
+    {
+        $this->emitter = null;
+        $this->listener = null;
     }
 }
 

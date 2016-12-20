@@ -40,51 +40,19 @@ class AuthController extends Controller
 //    protected $redirectTo = '/AddRoleUser';
 //    protected $redirectTo = 'users/2';
     protected $username='username';
-    /**
-     * Create a new authentication controller instance.
-     *
-     * @return void
-     */
-    protected function getFailedLoginMessage(){//zle zalogowanie
-        return 'Problem z zalogowaniem spróbuj ponownie.';
-    }
-
 
     public function __construct()
     {
         $this->middleware('guest', ['except' => ['logout','getLogout']]);
     }
 
-    /**
-     * Get a validator for an incoming registration request.
-     *
-     * @param  array  $data
-     * @return \Illuminate\Contracts\Validation\Validator
-     */
-    protected function validator(array $data)
+    public function getlogout()
     {
-        return Validator::make($data, [
-            'username' => 'required|max:255',
-            'email' => 'required|email|max:255|unique:users',
-            'password' => 'required|confirmed|min:8',
-        ]);
+        \Auth::logout();
+        Session::flush();
+        return redirect('/');
     }
 
-    /**
-     * Create a new user instance after a valid registration.
-     *
-     * @param  array  $data
-     * @return User
-     */
-    protected function create(array $data)
-    {
-        return User::create([
-            'username' => $data['username'],
-            'email' => $data['email'],
-            'password' => bcrypt($data['password']),
-//            'image_url'=>'img/avatar/thumbnails/cultist.png',//Tworzenie domyslnego zdjecia
-        ]);
-    }
     public function register(Request $request)
     {
         $validator = $this->validator($request->all());
@@ -117,5 +85,45 @@ class AuthController extends Controller
 //
         Auth::user()->save();
         return redirect($this->redirectPath());//zmiana na dodanie uprawnien
+    }
+
+    /**
+     * Get a validator for an incoming registration request.
+     *
+     * @param  array $data
+     * @return \Illuminate\Contracts\Validation\Validator
+     */
+    protected function validator(array $data)
+    {
+        return Validator::make($data, [
+            'username' => 'required|max:255',
+            'email' => 'required|email|max:255|unique:users',
+            'password' => 'required|confirmed|min:8',
+        ]);
+    }
+
+    /**
+     * Create a new user instance after a valid registration.
+     *
+     * @param  array $data
+     * @return User
+     */
+    protected function create(array $data)
+    {
+        return User::create([
+            'username' => $data['username'],
+            'email' => $data['email'],
+            'password' => bcrypt($data['password']),
+        ]);
+    }
+
+    /**
+     * Create a new authentication controller instance.
+     *
+     * @return void
+     */
+    protected function getFailedLoginMessage()
+    {//zle zalogowanie
+        return 'Problem z zalogowaniem spróbuj ponownie.';
     }
 }
