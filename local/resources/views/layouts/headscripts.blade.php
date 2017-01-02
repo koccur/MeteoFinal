@@ -9,7 +9,8 @@
     <!-- jQuery -->
     <script src={{URL::asset('js/jquery-2.2.4.min.js')}}></script>
     <script src={{URL::asset('js/jqueryUI/jquery-ui.min.js')}}></script>
-    <script src="http://maps.googleapis.com/maps/api/js?libraries=places" type="text/javascript"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YourApiKey&libraries=places"
+            async defer></script>
     <script src={{URL::asset('js/ckeditor.js')}}></script>
     <script src={{URL::asset('js/skycons/skycons.js')}}></script>
     <script src={{URL::asset('js/progressbar.js')}}></script>
